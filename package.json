@@ -1,13 +1,20 @@
 {
-  "name": "cli",
-  "version": "0.0.1",
-  "description": "Core CLI",
+  "name": "smb-nest-cli",
+  "version": "0.0.2-beta",
+  "description": "Nest Core CLI for NewAgeSys Inc.",
   "main": "index.js",
+  "author": "Jasif Shameem K <jasifk@newagesmb.com>",
+  "contributors": [
+    "Titto Dominic <titto@newagesmb.com>"
+  ],
   "license": "MIT",
   "type": "module",
   "exports": "./dist/index.js",
   "bin": {
     "smb-nest-cli": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=14.16"
   },
   "scripts": {
     "typecheck": "tsc",
