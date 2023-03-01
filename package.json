@@ -1,0 +1,49 @@
+{
+  "name": "cli",
+  "version": "0.0.1",
+  "description": "Core CLI",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "bin": {
+    "smb-nest-cli": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist .turbo node_modules",
+    "start": "node dist/index.js",
+    "lint": "eslint . --report-unused-disable-directives",
+    "lint:fix": "pnpm lint --fix",
+    "format": "prettier --write --plugin-search-dir=. **/*.{cjs,mjs,ts,tsx,md,json} --ignore-path ../.gitignore --ignore-unknown --no-error-on-unmatched-pattern",
+    "format:check": "pnpm format --check",
+    "release": "changeset version",
+    "pub:beta": "pnpm build && npm publish --tag beta",
+    "pub:next": "pnpm build && npm publish --tag next",
+    "pub:release": "pnpm build && npm publish"
+  },
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "commander": "^10.0.0",
+    "execa": "^7.0.0",
+    "fs-extra": "^11.1.0",
+    "gradient-string": "^2.0.2",
+    "inquirer": "^9.1.4",
+    "ora": "^6.1.2",
+    "prettier": "^2.8.4",
+    "sort-package-json": "^2.4.1",
+    "ts-morph": "^17.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.1",
+    "@types/gradient-string": "^1.1.2",
+    "@types/inquirer": "^9.0.3",
+    "@types/node": "^18.14.2",
+    "@types/prettier": "^2.7.2",
+    "tsup": "^6.6.3",
+    "type-fest": "^3.6.1",
+    "typescript": "^4.9.5"
+  }
+}
