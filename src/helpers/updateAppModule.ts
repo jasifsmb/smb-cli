@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import ora from "ora";
+import fs from "fs-extra";
 import prettier from "prettier";
 import {
   ArrayLiteralExpression,
@@ -22,14 +23,13 @@ export const updateAppModule = ({
   try {
     spinner.start();
     const projectDir = projectName;
+    const appModulePath = projectDir + "/src/app.module.ts";
     const appModuleChangeParams = getAppModuleChangeParams();
     const project = new Project();
     project.addSourceFilesAtPaths(projectDir + "/**");
     project.getSourceFiles();
 
-    const appModule = project.getSourceFileOrThrow(
-      projectDir + "/src/app.module.ts"
-    );
+    const appModule = project.getSourceFileOrThrow(appModulePath);
     const classDeclaration = appModule.getClassOrThrow("AppModule");
     const decoration = classDeclaration?.getDecoratorOrThrow("Module");
     const obj: ObjectLiteralExpression =
@@ -63,9 +63,13 @@ export const updateAppModule = ({
     project.saveSync();
 
     // TODO: Check the prettier is not working as expected!
-    prettier.format(projectDir + "/src/app.module.ts", {
-      parser: "typescript",
-    });
+    fs.writeFileSync(
+      appModulePath,
+      prettier.format(fs.readFileSync(appModulePath, "utf8"), {
+        parser: "babel-ts",
+      })
+    );
+
     spinner.succeed(`${chalk.green("AppModule updated successfully!")}\n`);
   } catch (error) {
     spinner.fail("Error occured while updating AppModule File.");
