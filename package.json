@@ -1,6 +1,6 @@
 {
   "name": "smb-nest-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Nest Core CLI for NewAgeSys Inc.",
   "main": "index.js",
   "author": "Jasif Shameem K <jasifk@newagesmb.com>",
