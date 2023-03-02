@@ -14,9 +14,11 @@ import { logger } from "~/utils/logger.js";
 export const updateAppModule = ({
   projectName,
   packages,
+  defaultEngine,
 }: {
   projectName: string;
   packages: PkgInstallerMap;
+  defaultEngine: "sql" | "mongo";
 }) => {
   logger.info("Updating AppModule file...");
   const spinner = ora(`Updating AppModule file...\n`).start();
@@ -53,6 +55,20 @@ export const updateAppModule = ({
           namedImports: appModuleChangeParams[pkgName].namedImports,
         });
         imports.addElement(appModuleChangeParams[pkgName].importElement);
+        if (pkgName === "sql" && defaultEngine === "sql") {
+          spinner.info(
+            `Changing default app engine to ${chalk.cyan.bold("SQL")}\n`
+          );
+          const appConfig = project.getSourceFileOrThrow(
+            projectDir + "/src/app.config.ts"
+          );
+          const defaultEngineDeclaration =
+            appConfig.getVariableDeclarationOrThrow("defaultEngine");
+          const initializer = defaultEngineDeclaration.getInitializerOrThrow(
+            "defaultEngine initiazer not found!"
+          );
+          initializer.replaceWithText("AppEngine.SQL");
+        }
       } else {
         logger.warn(
           `Change parameters not found for ${chalk.cyan.bold(pkgName)} module!`

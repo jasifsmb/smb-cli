@@ -14,8 +14,7 @@ interface CliFlags {
   default: boolean;
   importAlias: string;
 
-  /** @internal Used in CI. */
-  CI: boolean;
+  defaultEngine: "sql" | "mongo";
 }
 
 interface CliResults {
@@ -31,8 +30,8 @@ const defaultOptions: CliResults = {
     noGit: false,
     noInstall: false,
     default: false,
-    CI: false,
     importAlias: "~/",
+    defaultEngine: "mongo",
   },
 };
 
@@ -107,8 +106,10 @@ export const runCli = async () => {
       cliResults.appName = await promptAppName();
     }
     cliResults.packages = await promptPackages();
-    // const isUsungSql = cliResults.packages
-    // if ()
+
+    if (cliResults.packages.includes("sql")) {
+      cliResults.flags.defaultEngine = await promptDefaultEngine();
+    }
 
     if (!cliResults.flags.noGit) {
       cliResults.flags.noGit = !(await promptGit());
@@ -176,6 +177,17 @@ const promptPackages = async (): Promise<AvailablePackages[]> => {
   });
 
   return packages;
+};
+
+const promptDefaultEngine = async (): Promise<"sql" | "mongo"> => {
+  const { defaultEngine } = await inquirer.prompt<{ defaultEngine: boolean }>({
+    name: "defaultEngine",
+    type: "confirm",
+    message: "Make SQL as default engine?",
+    default: true,
+  });
+
+  return defaultEngine ? "sql" : "mongo";
 };
 
 const promptGit = async (): Promise<boolean> => {

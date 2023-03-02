@@ -10,12 +10,14 @@ interface CreateProjectOptions {
   packages: PkgInstallerMap;
   noInstall: boolean;
   importAlias: string;
+  defaultEngine: "sql" | "mongo";
 }
 
 export const createProject = async ({
   projectName,
   packages,
   noInstall,
+  defaultEngine,
 }: CreateProjectOptions) => {
   const pkgManager = getUserPkgManager();
   const projectDir = path.resolve(process.cwd(), projectName);
@@ -36,7 +38,7 @@ export const createProject = async ({
     noInstall,
   });
 
-  updateAppModule({ projectName, packages });
+  updateAppModule({ projectName, packages, defaultEngine });
 
   return projectDir;
 };
