@@ -7,7 +7,7 @@ type AppModuleUtils = {
     importElement: string;
   };
 };
-export const getAppModuleUtils = (): AppModuleUtils => {
+export const getAppModuleChangeParams = (): AppModuleUtils => {
   return {
     sql: {
       moduleSpecifier: "@core/sql",
