@@ -72,7 +72,7 @@ export const updateAppModule = ({
 
     spinner.succeed(`${chalk.green("AppModule updated successfully!")}\n`);
   } catch (error) {
-    spinner.fail("Error occured while updating AppModule File.");
+    spinner.fail("Error occurred while updating AppModule File.");
     logger.error(error);
     process.exit(1);
   }
