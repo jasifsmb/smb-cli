@@ -62,7 +62,6 @@ export const updateAppModule = ({
 
     project.saveSync();
 
-    // TODO: Check the prettier is not working as expected!
     fs.writeFileSync(
       appModulePath,
       prettier.format(fs.readFileSync(appModulePath, "utf8"), {
@@ -72,7 +71,7 @@ export const updateAppModule = ({
 
     spinner.succeed(`${chalk.green("AppModule updated successfully!")}\n`);
   } catch (error) {
-    spinner.fail("Error occured while updating AppModule File.");
+    spinner.fail("Error occurred while updating AppModule File.");
     logger.error(error);
     process.exit(1);
   }
