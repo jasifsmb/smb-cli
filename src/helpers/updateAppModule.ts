@@ -62,7 +62,7 @@ export const updateAppModule = ({
 
     project.saveSync();
 
-    // TODO: Check the prettier is not working as expected!
+    // formatting appModule.ts using prettier
     fs.writeFileSync(
       appModulePath,
       prettier.format(fs.readFileSync(appModulePath, "utf8"), {

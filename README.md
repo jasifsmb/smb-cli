@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  Get started with the SMB Nest App by running <code>npx smb-nest-app</code>
+  Get started with the SMB Nest App by running <code>npx smb-nest-app new app-name</code>
 </p>
 
 ## Table of contents
@@ -21,17 +21,17 @@ To scaffold an app using `smb-nest-cli`, run any of the following three commands
 ### npm
 
 ```bash
-npx smb-nest-cli
+npx smb-nest-cli  new app-name
 ```
 
 ### yarn
 
 ```bash
-yarn dlx smb-nest-cli
+yarn dlx smb-nest-cli  new app-name
 ```
 
 ### pnpm
 
 ```bash
-pnpm dlx smb-nest-cli
+pnpm dlx smb-nest-cli  new app-name
 ```

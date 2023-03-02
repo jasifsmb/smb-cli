@@ -1,4 +1,5 @@
-import { Command } from "commander";
+import chalk from "chalk";
+import * as commander from "commander";
 import inquirer from "inquirer";
 import { DEFAULT_APP_NAME, SMB_NEST_CLI } from "./consts.js";
 import { availablePackages, AvailablePackages } from "./installers/index.js";
@@ -37,11 +38,16 @@ const defaultOptions: CliResults = {
 
 export const runCli = async () => {
   const cliResults = defaultOptions;
-
-  const program = new Command().name(SMB_NEST_CLI);
+  const supportedCommands = ["new", "add"];
+  const program = new commander.Command().name(SMB_NEST_CLI);
 
   program
     .description("A CLI for creating SMB Nest Core App")
+    .addArgument(
+      new commander.Argument("[command]", "CLI command to take action").choices(
+        supportedCommands
+      )
+    )
     .argument(
       "[dir]",
       "The name of the application, as well as the name of the directory to create"
@@ -71,7 +77,13 @@ export const runCli = async () => {
     package manager such as pnpm, npm, or Yarn Classic.`);
   }
 
-  const cliProvidedName = program.args[0];
+  const command = program.args[0];
+  if (command !== "new") {
+    logger.error(`Command ${chalk.cyan.bold(command)} not implemented yet!`);
+    process.exit(0);
+  }
+
+  const cliProvidedName = program.args[1];
   if (cliProvidedName) {
     cliResults.appName = cliProvidedName;
   }
@@ -95,6 +107,8 @@ export const runCli = async () => {
       cliResults.appName = await promptAppName();
     }
     cliResults.packages = await promptPackages();
+    // const isUsungSql = cliResults.packages
+    // if ()
 
     if (!cliResults.flags.noGit) {
       cliResults.flags.noGit = !(await promptGit());
