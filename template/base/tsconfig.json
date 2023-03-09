@@ -18,24 +18,10 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@core/mongo": [
-        "libs/mongo/src"
-      ],
-      "@core/mongo/*": [
-        "libs/mongo/src/*"
-      ],
-      "@core/sql": [
-        "libs/sql/src"
-      ],
-      "@core/sql/*": [
-        "libs/sql/src/*"
-      ],
-      "@core/common": [
-        "libs/common/src"
-      ],
-      "@core/common/*": [
-        "libs/common/src/*"
-      ]
+      "@core/mongo": ["libs/mongo/src"],
+      "@core/mongo/*": ["libs/mongo/src/*"],
+      "@core/sql": ["libs/sql/src"],
+      "@core/sql/*": ["libs/sql/src/*"]
     }
   }
 }

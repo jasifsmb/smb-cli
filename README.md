@@ -21,17 +21,17 @@ To scaffold an app using `smb-nest-cli`, run any of the following three commands
 ### npm
 
 ```bash
-npx smb-nest-cli  new app-name
+npx smb-nest-cli new app-name
 ```
 
 ### yarn
 
 ```bash
-yarn dlx smb-nest-cli  new app-name
+yarn dlx smb-nest-cli new app-name
 ```
 
 ### pnpm
 
 ```bash
-pnpm dlx smb-nest-cli  new app-name
+pnpm dlx smb-nest-cli new app-name
 ```

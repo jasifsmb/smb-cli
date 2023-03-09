@@ -91,8 +91,7 @@
     ],
     "moduleNameMapper": {
       "^@core/mongo(|/.*)$": "<rootDir>/libs/mongo/src/$1",
-      "^@core/sql(|/.*)$": "<rootDir>/libs/sql/src/$1",
-      "^@core/common(|/.*)$": "<rootDir>/libs/common/src/$1"
+      "^@core/sql(|/.*)$": "<rootDir>/libs/sql/src/$1"
     }
   }
 }

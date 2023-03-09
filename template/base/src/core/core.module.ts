@@ -8,6 +8,7 @@ import { ThrottlerModule } from '@nestjs/throttler/dist/throttler.module';
 import { existsSync, mkdirSync } from 'fs';
 import config from '../config';
 import { SessionModule } from './modules/session/session.module';
+import { SocketModule } from './modules/socket/socket.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SessionModule } from './modules/session/session.module';
       useFactory: (config: ConfigService) => config.get('cache'),
     }),
     SessionModule,
+    SocketModule,
     ServeStaticModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

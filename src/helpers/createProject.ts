@@ -4,20 +4,19 @@ import { installPackages } from "~/helpers/installPackages.js";
 import { scaffoldProject } from "~/helpers/scaffoldProject.js";
 import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
 import { updateAppModule } from "./updateAppModule.js";
+import { addSQLEngine } from "./addSQLEngine.js";
 
 interface CreateProjectOptions {
   projectName: string;
   packages: PkgInstallerMap;
   noInstall: boolean;
   importAlias: string;
-  defaultEngine: "sql" | "mongo";
 }
 
 export const createProject = async ({
   projectName,
   packages,
   noInstall,
-  defaultEngine,
 }: CreateProjectOptions) => {
   const pkgManager = getUserPkgManager();
   const projectDir = path.resolve(process.cwd(), projectName);
@@ -38,7 +37,11 @@ export const createProject = async ({
     noInstall,
   });
 
-  updateAppModule({ projectName, packages, defaultEngine });
+  if (packages.sql.inUse) {
+    addSQLEngine({ projectName });
+  }
+
+  updateAppModule({ projectName, packages });
 
   return projectDir;
 };

@@ -13,8 +13,6 @@ interface CliFlags {
   noInstall: boolean;
   default: boolean;
   importAlias: string;
-
-  defaultEngine: "sql" | "mongo";
 }
 
 interface CliResults {
@@ -25,13 +23,12 @@ interface CliResults {
 
 const defaultOptions: CliResults = {
   appName: DEFAULT_APP_NAME,
-  packages: ["sql"],
+  packages: [],
   flags: {
     noGit: false,
     noInstall: false,
     default: false,
     importAlias: "~/",
-    defaultEngine: "mongo",
   },
 };
 
@@ -105,10 +102,11 @@ export const runCli = async () => {
     if (!cliProvidedName) {
       cliResults.appName = await promptAppName();
     }
-    cliResults.packages = await promptPackages();
+    // cliResults.packages = await promptPackages();
 
-    if (cliResults.packages.includes("sql")) {
-      cliResults.flags.defaultEngine = await promptDefaultEngine();
+    const defaultEngine = await promptDefaultEngine();
+    if (defaultEngine === "sql") {
+      cliResults.packages.push("sql");
     }
 
     if (!cliResults.flags.noGit) {
@@ -170,24 +168,39 @@ const promptPackages = async (): Promise<AvailablePackages[]> => {
     name: "packages",
     type: "checkbox",
     message: "Which packages would you like to enable?",
-    choices: availablePackages.map((pkgName) => ({
-      name: pkgName,
-      checked: false,
-    })),
+    choices: availablePackages
+      .filter((p) => p !== "sql")
+      .map((pkgName) => ({
+        name: pkgName,
+        checked: false,
+      })),
   });
 
   return packages;
 };
 
 const promptDefaultEngine = async (): Promise<"sql" | "mongo"> => {
-  const { defaultEngine } = await inquirer.prompt<{ defaultEngine: boolean }>({
+  const { defaultEngine } = await inquirer.prompt<{
+    defaultEngine: "sql" | "mongo";
+  }>({
     name: "defaultEngine",
-    type: "confirm",
-    message: "Make SQL as default engine?",
-    default: true,
+    type: "list",
+    message: "Choose the default database engnie",
+    choices: [
+      {
+        key: "m",
+        name: "Mongo",
+        value: "mongo",
+      },
+      {
+        key: "s",
+        name: "SQL",
+        value: "sql",
+      },
+    ],
   });
 
-  return defaultEngine ? "sql" : "mongo";
+  return defaultEngine;
 };
 
 const promptGit = async (): Promise<boolean> => {

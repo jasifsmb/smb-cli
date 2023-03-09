@@ -1,27 +1,10 @@
-import {
-  BulkCreateOptions,
-  CountOptions,
-  CreateOptions,
-  DestroyOptions,
-  FindAndCountOptions,
-  FindOptions,
-  FindOrBuildOptions,
-  FindOrCreateOptions,
-} from 'sequelize';
+import { QueryOptions } from 'mongoose';
 import config from 'src/config';
 
-type SqlOptions = FindOptions &
-  CreateOptions &
-  BulkCreateOptions &
-  FindAndCountOptions &
-  CountOptions &
-  DestroyOptions &
-  FindOrCreateOptions &
-  FindOrBuildOptions & {
-    pagination?: boolean;
-    allowEmpty?: boolean;
-    sideEffects?: boolean;
-  };
+export interface MongoOptions extends QueryOptions {
+  pagination?: boolean;
+  allowEmpty?: boolean;
+}
 
 export interface JobResponse {
   /**
@@ -115,9 +98,9 @@ export interface Job {
   status?: 'Pending' | 'Completed' | 'Errored';
 
   /**
-   * parameters for sql
+   * parameters for mongo
    */
-  sql?: SqlOptions;
+  mongo?: MongoOptions;
 }
 
 export class Job {

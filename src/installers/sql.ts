@@ -16,10 +16,21 @@ export const sqlInstaller: Installer = ({ projectDir }) => {
     devMode: false,
   });
 
-  const extrasDir = path.join(PKG_ROOT, "template/extras");
+  addPackageDependency({
+    projectDir,
+    dependencies: ["@types/sequelize"],
+    devMode: true,
+  });
 
-  const sqlDir = path.join(extrasDir, "sql");
-  const sqlDest = path.join(projectDir, "libs/sql");
+  const libsDir = path.join(PKG_ROOT, "template/extras/libs/sql");
+  const decDir = path.join(PKG_ROOT, "template/extras/decorators/sql");
+  const modDir = path.join(PKG_ROOT, "template/extras/modules/sql");
 
-  fs.copySync(sqlDir, sqlDest, { overwrite: true });
+  const sqlLibsDest = path.join(projectDir, "libs/sql");
+  const sqlDecDest = path.join(projectDir, "src/core/decprators/sql");
+  const sqlModDest = path.join(projectDir, "src/modules/sql");
+
+  fs.copySync(libsDir, sqlLibsDest, { overwrite: true });
+  fs.copySync(decDir, sqlDecDest, { overwrite: true });
+  fs.copySync(modDir, sqlModDest, { overwrite: true });
 };

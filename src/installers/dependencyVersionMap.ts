@@ -7,5 +7,6 @@ export const dependencyVersionMap = {
   sequelize: "^6.28.0",
   "sequelize-typescript": "^2.1.5",
   "@nestjs/sequelize": "^9.0.0",
+  "@types/sequelize": "^4.28.14",
 } as const;
 export type AvailableDependencies = keyof typeof dependencyVersionMap;
