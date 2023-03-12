@@ -10,7 +10,7 @@ export default defineConfig({
   minify: !isDev,
   metafile: !isDev,
   sourcemap: true,
-  target: "es2018",
+  target: "esnext",
   outDir: "dist",
   onSuccess: isDev ? "node dist/index.js" : undefined,
 });

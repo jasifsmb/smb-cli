@@ -74,6 +74,14 @@ export const runCli = async () => {
   }
 
   const command = program.args[0];
+  if (!command) {
+    logger.error(
+      `Need a command to work with the cli. Supported commands: ${supportedCommands.join(
+        ", "
+      )}`
+    );
+    process.exit(0);
+  }
   if (command !== "new") {
     logger.error(`Command ${chalk.cyan.bold(command)} not implemented yet!`);
     process.exit(0);
