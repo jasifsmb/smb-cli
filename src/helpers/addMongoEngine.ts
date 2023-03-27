@@ -24,6 +24,8 @@ export const addMongoEngine = ({ projectName }: { projectName: string }) => {
     const modulePath = projectDir + '/src/modules/common.module.ts';
 
     updateCommonModule(modulePath, project);
+    updateRedisIntercepter(modulePath, project);
+    updateRedisService(modulePath, project);
 
     spinner.info(
       `Changing default app engine to ${chalk.cyan.bold('Mongo')}\n`,
@@ -38,6 +40,32 @@ export const addMongoEngine = ({ projectName }: { projectName: string }) => {
     logger.error(error);
     process.exit(1);
   }
+};
+
+const updateRedisIntercepter = (modulePath: string, project: Project) => {
+  const intercepter = project.getSourceFileOrThrow(modulePath);
+
+  const changeParams = getMongoEngineChangeParams()['commonModule'];
+  for (const param of changeParams.socketAdapter) {
+    intercepter.addImportDeclaration({
+      moduleSpecifier: param.path,
+      namedImports: [param.name],
+    });
+  }
+  intercepter.fixUnusedIdentifiers();
+};
+
+const updateRedisService = (modulePath: string, project: Project) => {
+  const service = project.getSourceFileOrThrow(modulePath);
+
+  const changeParams = getMongoEngineChangeParams()['commonModule'];
+  for (const param of changeParams.socketAdapter) {
+    service.addImportDeclaration({
+      moduleSpecifier: param.path,
+      namedImports: [param.name],
+    });
+  }
+  service.fixUnusedIdentifiers();
 };
 
 const updateCommonModule = (modulePath: string, project: Project) => {
@@ -61,7 +89,7 @@ const updateCommonModule = (modulePath: string, project: Project) => {
   for (const param of changeParams.modules) {
     commonModule.addImportDeclaration({
       moduleSpecifier: param.path,
-      namedImports: [`${param.name} as ${param.alias}`],
+      namedImports: [param.name],
     });
     variableDecleration.addElement(param.name);
   }
@@ -69,10 +97,10 @@ const updateCommonModule = (modulePath: string, project: Project) => {
   for (const param of changeParams.providers) {
     commonModule.addImportDeclaration({
       moduleSpecifier: param.classPath,
-      namedImports: [`${param.class} as ${param.alias}`],
+      namedImports: [param.class],
     });
     providersInitializer.addElement(
-      `{provide: ${param.provide}, useClass: ${param.alias}}`,
+      `{provide: ${param.provide}, useClass: ${param.class}}`,
     );
   }
 

@@ -43,6 +43,8 @@ export const addSQLEngine = ({ projectName }: { projectName: string }) => {
     const modulePath = projectDir + '/src/modules/common.module.ts';
 
     updateCommonModule(modulePath, project);
+    updateRedisIntercepter(modulePath, project);
+    updateRedisService(modulePath, project);
 
     spinner.info(`Changing default app engine to ${chalk.cyan.bold('SQL')}\n`);
     changeDefaultEngine(projectDir + '/src/app.config.ts', project);
@@ -94,6 +96,32 @@ const updateCommonModule = (modulePath: string, project: Project) => {
   }
 
   commonModule.fixUnusedIdentifiers();
+};
+
+const updateRedisIntercepter = (modulePath: string, project: Project) => {
+  const intercepter = project.getSourceFileOrThrow(modulePath);
+
+  const changeParams = getSQLEngineChangeParams()['commonModule'];
+  for (const param of changeParams.socketAdapter) {
+    intercepter.addImportDeclaration({
+      moduleSpecifier: param.path,
+      namedImports: [param.name],
+    });
+  }
+  intercepter.fixUnusedIdentifiers();
+};
+
+const updateRedisService = (modulePath: string, project: Project) => {
+  const service = project.getSourceFileOrThrow(modulePath);
+
+  const changeParams = getSQLEngineChangeParams()['commonModule'];
+  for (const param of changeParams.socketAdapter) {
+    service.addImportDeclaration({
+      moduleSpecifier: param.path,
+      namedImports: [param.name],
+    });
+  }
+  service.fixUnusedIdentifiers();
 };
 
 const changeDefaultEngine = (configPath: string, project: Project) => {

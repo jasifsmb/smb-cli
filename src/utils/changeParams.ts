@@ -22,43 +22,35 @@ export const getMongoEngineChangeParams = () => ({
     modules: [
       {
         name: 'AuthModule',
-        alias: 'MongoAuthModule',
         path: './mongo/auth/auth.module',
       },
       {
         name: 'LocalAuthModule',
-        alias: 'MongoLocalAuthModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/auth/strategies/local/local-auth.module',
       },
       {
         name: 'RoleModule',
-        alias: 'RoleMongoModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/role/role.module',
       },
       {
         name: 'UserModule',
-        alias: 'UserMongoModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/user/user.module',
       },
       {
         name: 'PageModule',
-        alias: 'PageMongoModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/page/page.module',
       },
       {
         name: 'TemplateModule',
-        alias: 'TemplateMongoModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/template/template.module',
       },
       {
         name: 'SettingModule',
-        alias: 'SettingMongoModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/setting/setting.module',
       },
       {
         name: 'NotificationModule',
-        alias: 'MongoNotificationModule',
-        path: './mongo/auth/auth.module',
+        path: './mongo/notification/notification.module',
       },
     ],
     providers: [
@@ -66,13 +58,17 @@ export const getMongoEngineChangeParams = () => ({
         provide: 'APP_GUARD',
         class: 'JwtAuthGuard',
         classPath: './mongo/auth/strategies/jwt/jwt-auth.guard',
-        alias: 'MongoJwtAuthGuard',
       },
       {
         provide: 'APP_GUARD',
         class: 'RolesGuard',
         classPath: './mongo/auth/roles.guard',
-        alias: 'MongoRolesGuard',
+      },
+    ],
+    socketAdapter: [
+      {
+        name: 'AuthenticatedSocket',
+        path: '../socket-state/socket-state.adapter',
       },
     ],
   },
@@ -108,6 +104,12 @@ export const getSQLEngineChangeParams = () => ({
         provide: 'APP_GUARD',
         class: 'RolesGuard',
         classPath: './sql/auth/roles.guard',
+      },
+    ],
+    socketAdapter: [
+      {
+        name: 'AuthenticatedSocket',
+        path: '../socket-state/socket-state-mongo.adapter',
       },
     ],
   },
