@@ -1,7 +1,7 @@
 import { isObject, isString } from 'class-validator';
 import { Op } from 'sequelize';
 import config from 'src/config';
-import { convertPopulate, convertWhere } from 'src/core/core.utils';
+import { convertPopulate, convertWhere } from './sql.utils';
 import { SqlJob } from './sql.job';
 
 /**

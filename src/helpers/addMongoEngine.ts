@@ -61,7 +61,7 @@ const updateCommonModule = (modulePath: string, project: Project) => {
   for (const param of changeParams.modules) {
     commonModule.addImportDeclaration({
       moduleSpecifier: param.path,
-      namedImports: [param.name],
+      namedImports: [`${param.name} as ${param.alias}`],
     });
     variableDecleration.addElement(param.name);
   }

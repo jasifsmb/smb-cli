@@ -1,4 +1,4 @@
-import { SqlJob } from '@core/sql';
+import { MongoJob } from '@core/mongo';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(req: any, payload: any) {
     const { error, data } = await this._user.db.findRecordById(
-      new SqlJob({
+      new MongoJob({
         id: payload.userId,
         options: {
           attributes: { include: req[OWNER_INCLUDE_ATTRIBUTES_KEY] },
