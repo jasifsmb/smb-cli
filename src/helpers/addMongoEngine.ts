@@ -95,7 +95,7 @@ const copyMongoFiles = (projectDir: string) => {
   const seedsDir = path.join(PKG_ROOT, 'template/extras/seeds/mongo');
 
   const appGatewayTemplate = path.join(
-    projectDir,
+    PKG_ROOT,
     'template/extras/app.gateway.mongo.ts',
   );
   const socketAdapterDir = path.join(
