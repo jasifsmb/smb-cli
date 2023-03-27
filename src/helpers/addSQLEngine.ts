@@ -30,8 +30,8 @@ export const addSQLEngine = ({ projectName }: { projectName: string }) => {
     const tsConfig = fsExtra.readJSONSync(
       path.join(projectDir, 'tsconfig.json'),
     );
-    tsConfig.paths = {
-      ...tsConfig.paths,
+    tsConfig.compilerOptions.paths = {
+      ...tsConfig.compilerOptions.paths,
       '@core/sql': ['libs/sql/src'],
       '@core/sql/*': ['libs/sql/src/*'],
     };
