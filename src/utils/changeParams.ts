@@ -68,7 +68,7 @@ export const getMongoEngineChangeParams = () => ({
     socketAdapter: [
       {
         name: 'AuthenticatedSocket',
-        path: '../socket-state/socket-state.adapter',
+        path: '../socket-state/socket-state-mongo.adapter',
       },
     ],
   },
@@ -109,7 +109,7 @@ export const getSQLEngineChangeParams = () => ({
     socketAdapter: [
       {
         name: 'AuthenticatedSocket',
-        path: '../socket-state/socket-state-mongo.adapter',
+        path: '../socket-state/socket-state.adapter',
       },
     ],
   },
