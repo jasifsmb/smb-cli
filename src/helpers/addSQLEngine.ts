@@ -27,6 +27,17 @@ export const addSQLEngine = ({ projectName }: { projectName: string }) => {
     fsExtra.writeJSONSync(path.join(projectDir, 'package.json'), pkgJson, {
       spaces: 2,
     });
+    const tsConfig = fsExtra.readJSONSync(
+      path.join(projectDir, 'tsconfig.json'),
+    );
+    pkgJson.jest.moduleNameMapper = {
+      ...pkgJson.jest.moduleNameMapper,
+      '@core/sql': ['libs/sql/src'],
+      '@core/sql/*': ['libs/sql/src/*'],
+    };
+    fsExtra.writeJSONSync(path.join(projectDir, 'tsconfig.json'), tsConfig, {
+      spaces: 2,
+    });
     project.addSourceFilesAtPaths(projectDir + '/**');
 
     const modulePath = projectDir + '/src/modules/common.module.ts';
