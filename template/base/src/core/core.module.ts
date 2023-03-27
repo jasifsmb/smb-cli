@@ -6,6 +6,7 @@ import {
 } from '@nestjs/serve-static';
 import { ThrottlerModule } from '@nestjs/throttler/dist/throttler.module';
 import { existsSync, mkdirSync } from 'fs';
+import { MsClientModule } from 'src/core/modules/ms-client/ms-client.module';
 import config from '../config';
 import { SessionModule } from './modules/session/session.module';
 import { SocketModule } from './modules/socket/socket.module';
@@ -20,6 +21,7 @@ import { SocketModule } from './modules/socket/socket.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get('cache'),
     }),
+    MsClientModule,
     SessionModule,
     SocketModule,
     ServeStaticModule.forRootAsync({

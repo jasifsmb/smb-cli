@@ -1,4 +1,4 @@
-import { Entity } from '@core/sql/entity';
+import { SqlModel } from '@core/sql/sql.model';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -27,10 +27,10 @@ import { AuthProvider } from '../../auth/auth-provider.enum';
 import { Role } from '../../role/entities/role.entity';
 
 @DefaultScope(() => ({
-  attributes: { exclude: ['password', 'deleted_at'] },
+  attributes: { exclude: ['password'] },
 }))
 @Table
-export class User extends Entity<User> {
+export class User extends SqlModel {
   @ForeignKey(() => Role)
   @Column
   @ApiProperty({
@@ -228,14 +228,14 @@ export class User extends Entity<User> {
 
   @BeforeSave
   static setName(instance: User) {
-    if (!!instance.first_name && !!instance.last_name) {
+    if (instance.first_name && instance.last_name) {
       instance.name = `${instance.first_name} ${instance.last_name}`;
     }
   }
 
   @BeforeCreate
   static async hashPassword(instance: User) {
-    if (!!instance.password) {
+    if (instance.password) {
       instance.password = await generateHash(instance.password);
     }
   }

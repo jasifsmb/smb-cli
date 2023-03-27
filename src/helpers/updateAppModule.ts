@@ -1,14 +1,14 @@
-import chalk from "chalk";
-import ora from "ora";
+import chalk from 'chalk';
+import ora from 'ora';
 import {
   ArrayLiteralExpression,
   ObjectLiteralExpression,
   Project,
-} from "ts-morph";
-import { AvailablePackages, PkgInstallerMap } from "~/installers/index.js";
-import { logger } from "~/utils/logger.js";
-import { getAppModuleChangeParams } from "~/utils/changeParams.js";
-import { format } from "~/utils/prettierFormat.js";
+} from 'ts-morph';
+import { AvailablePackages, PkgInstallerMap } from '~/installers/index.js';
+import { logger } from '~/utils/logger.js';
+import { getAppModuleChangeParams } from '~/utils/changeParams.js';
+import { format } from '~/utils/prettierFormat.js';
 
 export const updateAppModule = ({
   projectName,
@@ -17,34 +17,34 @@ export const updateAppModule = ({
   projectName: string;
   packages: PkgInstallerMap;
 }) => {
-  logger.info("Updating AppModule file...");
+  logger.info('Updating AppModule file...');
   const spinner = ora(`Updating AppModule file...\n`).start();
   try {
     spinner.start();
     const projectDir = projectName;
-    const appModulePath = projectDir + "/src/app.module.ts";
+    const appModulePath = projectDir + '/src/app.module.ts';
     const appModuleChangeParams = getAppModuleChangeParams();
     const project = new Project();
-    project.addSourceFilesAtPaths(projectDir + "/**");
+    project.addSourceFilesAtPaths(projectDir + '/**');
 
     const appModule = project.getSourceFileOrThrow(appModulePath);
-    const classDeclaration = appModule.getClassOrThrow("AppModule");
-    const decoration = classDeclaration?.getDecoratorOrThrow("Module");
+    const classDeclaration = appModule.getClassOrThrow('AppModule');
+    const decoration = classDeclaration?.getDecoratorOrThrow('Module');
     const obj: ObjectLiteralExpression =
       decoration.getArguments()[0] as ObjectLiteralExpression;
 
     const imports: ArrayLiteralExpression = obj
-      .getPropertyOrThrow("imports")
+      .getPropertyOrThrow('imports')
       .getChildren()[2] as ArrayLiteralExpression;
     const isInUsePackages = Object.entries(packages).filter(
-      (pkg) => pkg[1].inUse
+      (pkg) => pkg[1].inUse,
     );
 
     for (const pkg of isInUsePackages) {
       const pkgName = pkg[0] as AvailablePackages;
       if (appModuleChangeParams[pkgName]) {
         spinner.info(
-          `Updating AppModule file for ${chalk.cyan.bold(pkgName)} module...\n`
+          `Updating AppModule file for ${chalk.cyan.bold(pkgName)} module...\n`,
         );
         appModule.addImportDeclaration({
           moduleSpecifier: appModuleChangeParams[pkgName].moduleSpecifier,
@@ -53,7 +53,7 @@ export const updateAppModule = ({
         imports.addElement(appModuleChangeParams[pkgName].importElement);
       } else {
         logger.warn(
-          `Change parameters not found for ${chalk.cyan.bold(pkgName)} module!`
+          `Change parameters not found for ${chalk.cyan.bold(pkgName)} module!`,
         );
       }
     }
@@ -63,9 +63,9 @@ export const updateAppModule = ({
     // formatting appModule.ts using prettier
     format(appModulePath);
 
-    spinner.succeed(`${chalk.green("AppModule updated successfully!")}\n`);
+    spinner.succeed(`${chalk.green('AppModule updated successfully!')}\n`);
   } catch (error) {
-    spinner.fail("Error occurred while updating AppModule File.");
+    spinner.fail('Error occurred while updating AppModule File.');
     logger.error(error);
     process.exit(1);
   }

@@ -1,18 +1,23 @@
+import { PopulateOptions } from 'mongoose';
 import config from 'src/config';
-import { Job } from 'src/core/core.job';
+import { MongoJob } from './mongo.job';
 
 /**
  * Decorator for converting request job.payload to job.sql
  *
  * job object will be available for model's methods as a parameter
  */
-export const ReadPayload = (target, methodName, descriptor) => {
+export const ReadPayload = (
+  _target: any,
+  _methodName: string,
+  descriptor: PropertyDescriptor,
+) => {
   const original = descriptor.value;
-  descriptor.value = function wrapper(job: Job) {
+  descriptor.value = function wrapper(job: MongoJob) {
     const payload = job.payload;
-    const select = payload.select || [];
+    const select: string[] = payload.select || [];
     const where = payload.where || {};
-    if (!!payload.search && !!this.searchFields.length) {
+    if (payload.search && this.searchFields.length) {
       where.$and = where.$and || [];
       const whereOR = [];
       for (let index = 0; index < this.searchFields.length; index++) {
@@ -22,28 +27,27 @@ export const ReadPayload = (target, methodName, descriptor) => {
       where.$and.push({ $or: whereOR });
     }
     const attributes = select.map((x) => x.replace(/[^a-zA-Z0-9_]/g, ''));
-    let populate: any = job.payload.populate || [];
-    populate = populate.map((x) => ({ path: x }));
+    const populate = (job.payload.populate || []).map((x: string) => ({
+      path: x,
+    }));
     let sort = job.payload.sort || [];
     if (typeof sort[0] === 'string') {
       sort = [sort];
     }
     sort = sort.map((x) => ({ [x[0]]: x[1] }));
 
-    job.mongo = {
-      ...job.payload,
+    job.options = {
       where: where || undefined,
       populate: populate,
       sort: sort,
       projection: attributes.length ? attributes.join(' ') : undefined,
-      offset: job.payload.offset ? +job.payload.offset : 0,
+      skip: job.payload.offset ? +job.payload.offset : 0,
       limit: job.payload.limit
         ? +job.payload.limit === -1
           ? 1000
           : +job.payload.limit
         : config().paginationLimit,
-      mongooseOptions: job.payload.mongooseOptions || {},
-      pagination: job.payload.pagination ?? true,
+      pagination: true,
     };
     return original.apply(this, [job]);
   };
@@ -54,15 +58,21 @@ export const ReadPayload = (target, methodName, descriptor) => {
  *
  * job object will be available for model's methods as a parameter
  */
-export const WritePayload = (target, methodName, descriptor) => {
+export const WritePayload = (
+  _target: any,
+  _methodName: string,
+  descriptor: PropertyDescriptor,
+) => {
   const original = descriptor.value;
-  descriptor.value = function wrapper(job: Job) {
+  descriptor.value = function wrapper(job: MongoJob) {
     const payload = job.payload;
-    let populate: any = payload.populate || [];
-    populate = populate.map((x) => ({ path: x }));
+    const populate: PopulateOptions[] = (job.payload.populate || []).map(
+      (x: string) => ({
+        path: x,
+      }),
+    );
 
-    job.mongo = {
-      ...job.payload,
+    job.options = {
       where: payload.where || undefined,
       populate: populate || undefined,
     };
@@ -75,13 +85,19 @@ export const WritePayload = (target, methodName, descriptor) => {
  *
  * job object will be available for model's methods as a parameter
  */
-export const DeletePayload = (target, methodName, descriptor) => {
+export const DeletePayload = (
+  _target: any,
+  _methodName: string,
+  descriptor: PropertyDescriptor,
+) => {
   const original = descriptor.value;
-  descriptor.value = function wrapper(job: Job) {
+  descriptor.value = function wrapper(job: MongoJob) {
     const payload = job.payload;
-    job.mongo = {
-      ...job.payload,
+    /* Check if hard delete */
+    const hardDelete = payload.mode && payload.mode === 'hard';
+    job.options = {
       where: payload.where || undefined,
+      hardDelete,
     };
     return original.apply(this, [job]);
   };

@@ -1,10 +1,11 @@
-import { type PkgInstallerMap } from "~/installers/index.js";
-import path from "path";
-import { installPackages } from "~/helpers/installPackages.js";
-import { scaffoldProject } from "~/helpers/scaffoldProject.js";
-import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
-import { updateAppModule } from "./updateAppModule.js";
-import { addSQLEngine } from "./addSQLEngine.js";
+import { type PkgInstallerMap } from '~/installers/index.js';
+import path from 'path';
+import { installPackages } from '~/helpers/installPackages.js';
+import { scaffoldProject } from '~/helpers/scaffoldProject.js';
+import { getUserPkgManager } from '~/utils/getUserPkgManager.js';
+import { updateAppModule } from './updateAppModule.js';
+import { addSQLEngine } from './addSQLEngine.js';
+import { addMongoEngine } from './addMongoEngine.js';
 
 interface CreateProjectOptions {
   projectName: string;
@@ -39,6 +40,8 @@ export const createProject = async ({
 
   if (packages.sql.inUse) {
     addSQLEngine({ projectName });
+  } else {
+    addMongoEngine({ projectName });
   }
 
   updateAppModule({ projectName, packages });

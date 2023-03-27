@@ -4,7 +4,7 @@ import { SequelizeModuleOptions } from '@nestjs/sequelize';
 
 import { isPrimaryInstance } from '../../../src/core/core.utils';
 
-const logger: Logger = new Logger('QueryLog');
+const logger: Logger = new Logger('SqlQueryLog');
 
 export default registerAs(
   'sql',
@@ -21,6 +21,8 @@ export default registerAs(
       alter: process.env.DATABASE_ALTER_SYNC === 'Y',
     },
     logging: (sql: string) =>
-      process.env.DATABASE_LOGGING === 'Y' ? logger.log(sql) : false,
+      process.env.DATABASE_LOGGING === 'Y'
+        ? logger.debug(`\x1B[0m${sql}`)
+        : false,
   }),
 );

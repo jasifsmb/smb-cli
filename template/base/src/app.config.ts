@@ -3,4 +3,4 @@ export enum AppEngine {
   Mongo = 'mongo',
 }
 
-export const defaultEngine: AppEngine = AppEngine.Mongo;
+export const defaultEngine: AppEngine = AppEngine.SQL;

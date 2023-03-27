@@ -21,7 +21,11 @@
       "@core/mongo": ["libs/mongo/src"],
       "@core/mongo/*": ["libs/mongo/src/*"],
       "@core/sql": ["libs/sql/src"],
-      "@core/sql/*": ["libs/sql/src/*"]
+      "@core/sql/*": ["libs/sql/src/*"],
+      "@core/email": ["libs/email/src"],
+      "@core/email/*": ["libs/email/src/*"],
+      "@core/aws": ["libs/aws/src"],
+      "@core/aws/*": ["libs/aws/src/*"]
     }
   }
 }

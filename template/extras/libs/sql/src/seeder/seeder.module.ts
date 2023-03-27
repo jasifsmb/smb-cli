@@ -10,10 +10,10 @@ import { SeederService } from './seeder.service';
 })
 export class SeederModule implements OnModuleInit {
   constructor(private _seeder: SeederService) {}
-  onModuleInit() {
+  async onModuleInit() {
     if (isPrimaryInstance()) {
       // seeding
-      this._seeder.seed();
+      await this._seeder.seed();
     }
   }
 }

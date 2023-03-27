@@ -1,40 +1,46 @@
-import chalk from "chalk";
-import ora from "ora";
-import { Project, SyntaxKind } from "ts-morph";
-import { getSQLEngineChangeParams } from "~/utils/changeParams.js";
-import { logger } from "~/utils/logger.js";
-import { format } from "~/utils/prettierFormat.js";
+import chalk from 'chalk';
+import fsExtra from 'fs-extra';
+import ora from 'ora';
+import path from 'path';
+import { Project, SyntaxKind } from 'ts-morph';
+import { PKG_ROOT } from '~/consts.js';
+import { getSQLEngineChangeParams } from '~/utils/changeParams.js';
+import { logger } from '~/utils/logger.js';
+import { format } from '~/utils/prettierFormat.js';
 
 export const addSQLEngine = ({ projectName }: { projectName: string }) => {
   // The project files are copied while installing packages for sql in installers/sql.ts
 
-  logger.info("Adding SQL engine...");
+  logger.info('Adding SQL engine...');
   const spinner = ora(`Adding SQL engine...\n`).start();
 
   try {
     spinner.start();
     const projectDir = projectName;
     const project = new Project();
-    project.addSourceFilesAtPaths(projectDir + "/**");
+    copySQLFiles(projectDir);
+    const pkgJson = fsExtra.readJSONSync(path.join(projectDir, 'package.json'));
+    pkgJson.jest.moduleNameMapper = {
+      ...pkgJson.jest.moduleNameMapper,
+      '^@core/sql(|/.*)$': '<rootDir>/libs/sql/src/$1',
+    };
+    fsExtra.writeJSONSync(path.join(projectDir, 'package.json'), pkgJson, {
+      spaces: 2,
+    });
+    project.addSourceFilesAtPaths(projectDir + '/**');
 
-    const modulePath = projectDir + "/src/modules/common.module.ts";
-    const gatewayPath = projectDir + "/src/app.gateway.ts";
-    const jobFilePath = projectDir + "/src/core/core.job.ts";
+    const modulePath = projectDir + '/src/modules/common.module.ts';
 
     updateCommonModule(modulePath, project);
-    updateAppGateway(gatewayPath, project);
-    updateJobFile(jobFilePath, project);
 
-    spinner.info(`Changing default app engine to ${chalk.cyan.bold("SQL")}\n`);
-    changeDefaultEngine(projectDir + "/src/app.config.ts", project);
+    spinner.info(`Changing default app engine to ${chalk.cyan.bold('SQL')}\n`);
+    changeDefaultEngine(projectDir + '/src/app.config.ts', project);
 
     project.saveSync();
 
     format(modulePath);
-    format(gatewayPath);
-    format(jobFilePath);
   } catch (error) {
-    spinner.fail("Error occurred while adding sql engine files.");
+    spinner.fail('Error occurred while adding sql engine files.');
     logger.error(error);
     process.exit(1);
   }
@@ -42,91 +48,82 @@ export const addSQLEngine = ({ projectName }: { projectName: string }) => {
 
 const updateCommonModule = (modulePath: string, project: Project) => {
   const commonModule = project.getSourceFileOrThrow(modulePath);
-  const classDeclaration = commonModule.getClassOrThrow("CommonModule");
-  const registerFunction = classDeclaration.getStaticMethodOrThrow("register");
+  const classDeclaration = commonModule.getClassOrThrow('CommonModule');
+  const registerFunction = classDeclaration.getStaticMethodOrThrow('register');
   const modulesVariableDeclration =
-    registerFunction.getVariableDeclarationOrThrow("modules");
+    registerFunction.getVariableDeclarationOrThrow('modules');
 
-  const variableDecleration = modulesVariableDeclration.getInitializerOrThrow(
-    "modules variable declration not found!"
-  );
-  const changeParams = getSQLEngineChangeParams()["commonModule"];
-  variableDecleration.replaceWithText(
-    `[${changeParams.map((p) => p.name).toString()}]`
-  );
-  for (const param of changeParams) {
+  const variableDecleration =
+    modulesVariableDeclration.getInitializerIfKindOrThrow(
+      SyntaxKind.ArrayLiteralExpression,
+    );
+  const providersVariableDeclaration =
+    registerFunction.getVariableDeclarationOrThrow('providers');
+  const providersInitializer =
+    providersVariableDeclaration.getInitializerIfKindOrThrow(
+      SyntaxKind.ArrayLiteralExpression,
+    );
+  const changeParams = getSQLEngineChangeParams()['commonModule'];
+  for (const param of changeParams.modules) {
     commonModule.addImportDeclaration({
       moduleSpecifier: param.path,
       namedImports: [param.name],
     });
+    variableDecleration.addElement(param.name);
+  }
+
+  for (const param of changeParams.providers) {
+    commonModule.addImportDeclaration({
+      moduleSpecifier: param.classPath,
+      namedImports: [param.class],
+    });
+    providersInitializer.addElement(
+      `{provide: ${param.provide}, useClass: ${param.class}}`,
+    );
   }
 
   commonModule.fixUnusedIdentifiers();
 };
 
-const updateAppGateway = (gatewayPath: string, project: Project) => {
-  const appGatewayClass = project.getSourceFileOrThrow(gatewayPath);
-  const adapterFunction =
-    appGatewayClass.getVariableDeclarationOrThrow("initAdapters");
-  const declaration = adapterFunction
-    .getParent()
-    .getDescendantsOfKind(SyntaxKind.VariableDeclaration)
-    .find((d) => d.getName() === "userService");
-
-  if (!declaration) throw new Error("userService declaration not found");
-  declaration.replaceWithText(
-    "userService = app.select(UserModule).get(UserService)"
-  );
-
-  const changeParams = getSQLEngineChangeParams()["appGateway"];
-  for (const param of changeParams) {
-    appGatewayClass.addImportDeclaration({
-      moduleSpecifier: param.path,
-      namedImports: [param.name],
-    });
-  }
-
-  appGatewayClass.fixUnusedIdentifiers();
-};
-
-const updateJobFile = (jobFilePath: string, project: Project) => {
-  const jobFile = project.getSourceFileOrThrow(jobFilePath);
-  const changeParams = getSQLEngineChangeParams()["job"];
-  for (const param of changeParams) {
-    jobFile.addImportDeclaration({
-      moduleSpecifier: param.path,
-      namedImports: [param.name],
-    });
-  }
-  const SqlOptionsType = jobFile.addTypeAlias({
-    name: "SqlOptions",
-    type: `${changeParams
-      .map((p) => p.name)
-      .join(" & ")} & { pagination?: boolean;
-      allowEmpty?: boolean;
-      sideEffects?: boolean; }`,
-  });
-  const imports = jobFile.getImportDeclarations();
-  const lastImport = imports[imports.length - 1];
-  if (lastImport) {
-    SqlOptionsType.setOrder(lastImport.getChildIndex() + 1);
-    lastImport.appendWhitespace((writer) => writer.newLine());
-  }
-
-  const jobInterface = jobFile.getInterfaceOrThrow("Job");
-  jobInterface.addProperty({
-    name: "sql",
-    type: "SqlOptions",
-    hasQuestionToken: true,
-  });
-};
-
 const changeDefaultEngine = (configPath: string, project: Project) => {
   const appConfig = project.getSourceFileOrThrow(configPath);
   const defaultEngineDeclaration =
-    appConfig.getVariableDeclarationOrThrow("defaultEngine");
+    appConfig.getVariableDeclarationOrThrow('defaultEngine');
   const initializer = defaultEngineDeclaration.getInitializerOrThrow(
-    "defaultEngine initiazer not found!"
+    'defaultEngine initiazer not found!',
   );
-  initializer.replaceWithText("AppEngine.SQL");
+  initializer.replaceWithText('AppEngine.SQL');
+};
+
+const copySQLFiles = (projectDir: string) => {
+  const libsDir = path.join(PKG_ROOT, 'template/extras/libs/sql');
+  const decDir = path.join(PKG_ROOT, 'template/extras/decorators/sql');
+  const modDir = path.join(PKG_ROOT, 'template/extras/modules/sql');
+  const seedsDir = path.join(PKG_ROOT, 'template/extras/seeds/sql');
+  const socketAdapterDir = path.join(
+    PKG_ROOT,
+    'template/extras/socket-adapters/socket-state.adapter.ts',
+  );
+
+  const appGatewayTemplate = path.join(
+    PKG_ROOT,
+    'template/extras/app.gateway.sql.ts',
+  );
+
+  const sqlLibsDest = path.join(projectDir, 'libs/sql');
+  const sqlDecDest = path.join(projectDir, 'src/core/decorators/sql');
+  const sqlModDest = path.join(projectDir, 'src/modules/sql');
+  const appGateway = path.join(projectDir, 'src/app.gateway.ts');
+  const seedsDest = path.join(projectDir, 'src/seeds/sql');
+  const socketAdapterDest = path.join(
+    projectDir,
+    'src/core/modules/socket/socket-state/socket-state.adapter.ts',
+  );
+
+  fsExtra.copySync(libsDir, sqlLibsDest, { overwrite: true });
+  fsExtra.copySync(decDir, sqlDecDest, { overwrite: true });
+  fsExtra.copySync(modDir, sqlModDest, { overwrite: true });
+  fsExtra.copySync(seedsDir, seedsDest, { overwrite: true });
+  fsExtra.copySync(appGatewayTemplate, appGateway, { overwrite: true });
+  fsExtra.copySync(socketAdapterDir, socketAdapterDest, { overwrite: true });
 };

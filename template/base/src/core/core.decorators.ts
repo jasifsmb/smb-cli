@@ -1,4 +1,10 @@
-import { applyDecorators, Type, UseInterceptors } from '@nestjs/common';
+import {
+  applyDecorators,
+  Type,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { MulterField } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import {
@@ -7,7 +13,10 @@ import {
   ApiQuery,
   getSchemaPath,
 } from '@nestjs/swagger';
+import { CDNStorage } from 'src/config';
+import { MsGuard } from 'src/core/guards/ms.quard';
 import {
+  QueryDeleteMode,
   QueryLimit,
   QueryOffset,
   QueryPopulate,
@@ -18,16 +27,6 @@ import {
 } from './core.definitions';
 import { pluralizeString, snakeCase } from './core.utils';
 import { UploadInterceptor } from './interceptors/upload.interceptors';
-
-export interface FileUploadOption extends MulterField {
-  required?: boolean;
-  bodyField?:
-    | string
-    | {
-        [key: string]: string;
-      };
-  message?: string;
-}
 
 export const ApiQueryGetAll = () => {
   return applyDecorators(
@@ -62,6 +61,10 @@ export const ApiQueryGetOne = () => {
 
 export const ApiQueryGetById = () => {
   return applyDecorators(ApiQuery(QuerySelect), ApiQuery(QueryPopulate));
+};
+
+export const ApiQueryDelete = () => {
+  return applyDecorators(ApiQuery(QueryDeleteMode));
 };
 
 export const ResponseGetAll = <TModel extends Type<any>>(
@@ -231,6 +234,17 @@ export const ResponseDeleted = <TModel extends Type<any>>(model: TModel) => {
   );
 };
 
+export interface FileUploadOption extends MulterField {
+  required?: boolean;
+  bodyField?:
+    | string
+    | {
+        [key: string]: string;
+      };
+  message?: string;
+  storage?: CDNStorage;
+}
+
 export const FileUploads = (files: FileUploadOption[]) => {
   return applyDecorators(
     UseInterceptors(
@@ -238,4 +252,8 @@ export const FileUploads = (files: FileUploadOption[]) => {
       ...files.map((x) => new UploadInterceptor(x)),
     ),
   );
+};
+
+export const MsListener = (metadata?: string) => {
+  return applyDecorators(UseGuards(MsGuard), MessagePattern(metadata));
 };

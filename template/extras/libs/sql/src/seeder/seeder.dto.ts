@@ -24,8 +24,8 @@ export interface SeedRecord {
     | SeedRecord;
 }
 
-export class Seed {
+export class Seed<T> {
   model: string;
   action: 'never' | 'once' | 'always';
-  data: SeedRecord[];
+  data: (Partial<T> & SeedRecord)[];
 }

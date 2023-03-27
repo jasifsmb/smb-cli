@@ -1,8 +1,8 @@
-import { type PackageManager } from "~/utils/getUserPkgManager.js";
-import { sqlInstaller } from "./sql.js";
+import { type PackageManager } from '~/utils/getUserPkgManager.js';
+import { sqlInstaller } from './sql.js';
 
-export const availablePackages = ["sql"] as const;
-export type AvailablePackages = typeof availablePackages[number];
+export const availablePackages = ['sql'] as const;
+export type AvailablePackages = (typeof availablePackages)[number];
 
 export interface InstallerOptions {
   projectDir: string;
@@ -22,10 +22,10 @@ export type PkgInstallerMap = {
 };
 
 export const buildPkgInstallerMap = (
-  packages: AvailablePackages[]
+  packages: AvailablePackages[],
 ): PkgInstallerMap => ({
   sql: {
-    inUse: packages.includes("sql"),
+    inUse: packages.includes('sql'),
     installer: sqlInstaller,
   },
 });

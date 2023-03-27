@@ -1,10 +1,10 @@
 import {
   type InstallerOptions,
   type PkgInstallerMap,
-} from "~/installers/index.js";
-import chalk from "chalk";
-import ora from "ora";
-import { logger } from "~/utils/logger.js";
+} from '~/installers/index.js';
+import chalk from 'chalk';
+import ora from 'ora';
+import { logger } from '~/utils/logger.js';
 
 type InstallPackagesOptions = {
   packages: PkgInstallerMap;
@@ -12,7 +12,7 @@ type InstallPackagesOptions = {
 // This runs the installer for all the packages that the user has selected
 export const installPackages = (options: InstallPackagesOptions) => {
   const { packages } = options;
-  logger.info("Adding boilerplate...");
+  logger.info('Adding boilerplate...');
 
   for (const [name, pkgOpts] of Object.entries(packages)) {
     if (pkgOpts.inUse) {
@@ -26,5 +26,5 @@ export const installPackages = (options: InstallPackagesOptions) => {
     }
   }
 
-  logger.info("");
+  logger.info('');
 };

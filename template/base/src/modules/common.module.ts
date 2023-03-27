@@ -1,20 +1,36 @@
-import { DynamicModule, Module } from "@nestjs/common";
-import { AppEngine } from "../app.config";
-import { ProductModule as ProductMongoModule } from "./mongo/product/product.module";
-import { RoleModule as RoleMongoModule } from "./mongo/role/role.module";
-import { UserModule as UserMongoModule } from "./mongo/user/user.module";
-
-export interface CommonModuleOption {
-  defaultEngine?: AppEngine;
-}
+import { DynamicModule, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { QueryGuard } from 'src/core/guards/query.guard';
+import { HistoryModule } from './mongo/history/history.module';
+import { LoginLogModule } from './mongo/login-log/login-log.module';
+import { OtpSessionModule } from './mongo/otp-session/otp-session.module';
+import { TaskModule } from './mongo/task/task.module';
+import { TrashModule } from './mongo/trash/trash.module';
 
 @Module({})
 export class CommonModule {
   static register(): DynamicModule {
-    const modules = [ProductMongoModule, RoleMongoModule, UserMongoModule];
+    // common imports
+    const modules = [
+      TaskModule,
+      HistoryModule,
+      TrashModule,
+      LoginLogModule,
+      OtpSessionModule,
+    ];
+
+    // common providers
+    const providers: any = [
+      {
+        provide: APP_GUARD,
+        useClass: QueryGuard,
+      },
+    ];
+
     return {
       module: CommonModule,
       imports: modules,
+      providers,
     };
   }
 }

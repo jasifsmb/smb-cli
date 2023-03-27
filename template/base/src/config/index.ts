@@ -3,6 +3,12 @@ import { join } from 'path';
 import { CacheManagerOptions } from '@nestjs/common';
 import { ThrottlerModuleOptions } from '@nestjs/throttler';
 
+export enum CDNStorage {
+  Local,
+  Aws,
+  Azure,
+}
+
 export default () => ({
   /**
    * @property {string} env - environment
@@ -38,6 +44,12 @@ export default () => ({
    * @default true
    */
   cdnStatic: true,
+  /**
+   * @property {CDNStorage} cdnStorage
+   * Default CDN storage, eg: Local Drive, Aws S3, Azure Storage, etc
+   * @default 0 (Local Storage)
+   */
+  cdnStorage: CDNStorage.Local,
   /**
    * @property {string} cdnPath
    * Path to serve static, by default it will use public/ folder

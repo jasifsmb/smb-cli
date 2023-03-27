@@ -1,12 +1,16 @@
-import { ModelService, ModelType } from '@core/sql';
+import {
+  ModelService,
+  ModelWrap,
+  SqlCreateBulkResponse,
+  SqlJob,
+  SqlService,
+} from '@core/sql';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { isArray } from 'class-validator';
-import { Job, JobResponse } from 'src/core/core.job';
 import { Setting } from './entities/setting.entity';
 
 @Injectable()
-export class SettingService extends ModelService {
+export class SettingService extends ModelService<Setting> {
   /**
    * searchFields
    * @property array of fields to include in search
@@ -19,8 +23,8 @@ export class SettingService extends ModelService {
    */
   searchPopulate: string[] = ['country'];
 
-  constructor(@InjectModel(Setting) model: ModelType<Setting>) {
-    super(model);
+  constructor(db: SqlService<Setting>) {
+    super(db);
   }
 
   /**
@@ -29,33 +33,30 @@ export class SettingService extends ModelService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async updateBulk(job: Job): Promise<JobResponse> {
+  async updateBulk(job: SqlJob): Promise<SqlCreateBulkResponse<Setting>> {
     if (!isArray(job.records) || !job.records.length) {
       return { error: 'Records missing' };
     }
-    job.response.data = [];
+    const settings: ModelWrap<Setting>[] = [];
     for (let index = 0; index < job.records.length; index++) {
       const record = job.records[index];
-      const recordJob = new Job({
+      const recordJob = new SqlJob({
         owner: job.owner,
         action: 'update',
         id: record.id,
         body: record,
-        sql: {
+        options: {
           fields: ['value'],
         },
       });
-      await this.doBeforeWrite(recordJob);
-      if (!!recordJob.response.error) {
-        return recordJob.response;
+      await this.doBeforeUpdate(recordJob);
+      if (recordJob.error) {
+        continue;
       }
-      recordJob.response = await this.updateRecord(recordJob);
-      await this.doAfterWrite(recordJob);
-      if (!!recordJob.response.error) {
-        return recordJob.response;
-      }
-      job.response.data.push(recordJob.response.data);
+      const response = await this.db.updateRecord(recordJob);
+      await this.doAfterUpdate(recordJob, response);
+      settings.push(response.data);
     }
-    return job.response;
+    return { data: settings };
   }
 }

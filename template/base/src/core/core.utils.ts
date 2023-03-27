@@ -126,3 +126,7 @@ export const isPrimaryInstance = (): boolean =>
   process.env.NODE_APP_INSTANCE === '0';
 
 export const pluralizeString = (str: string): string => plural(str);
+
+export const addDays = (days: number) => {
+  return new Date().setDate(new Date().getDate() + days) || undefined;
+};

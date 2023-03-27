@@ -1,10 +1,10 @@
-import { Entity } from '@core/sql/entity';
+import { SqlModel } from '@core/sql/sql.model';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { Column, Index, Table } from 'sequelize-typescript';
 
 @Table
-export class Country extends Entity<Country> {
+export class Country extends SqlModel {
   @Column
   @Index
   @ApiProperty({

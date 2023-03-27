@@ -6,9 +6,12 @@ import { join } from 'path';
 
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 
+import { isPrimaryInstance } from 'src/core/core.utils';
+import { initAdapters } from './app.gateway';
 import { AppModule } from './app.module';
 import { SwaggerConfig, SwaggerOptions } from './config/swagger';
 
@@ -40,6 +43,15 @@ async function bootstrap() {
   /* MVC setup */
   app.setBaseViewsDir(join(__dirname, 'views'));
   app.setViewEngine('hbs');
+  if (isPrimaryInstance()) {
+    /* Micro service setup */
+    app.connectMicroservice<MicroserviceOptions>(config.get('ms'));
+    await app.startAllMicroservices();
+  }
+  /* Init socket */
+  if (config.get('useSocketIO')) {
+    initAdapters(app);
+  }
   /* Starting app */
   const port = config.get('port');
   await app.listen(port);

@@ -1,11 +1,11 @@
-import { Entity } from '@core/sql/entity';
+import { SqlModel } from '@core/sql/sql.model';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
 import { DataTypes } from 'sequelize';
 import { Column, Table } from 'sequelize-typescript';
 
 @Table
-export class Page extends Entity<Page> {
+export class Page extends SqlModel {
   @Column({ unique: 'name' })
   @ApiProperty({
     description: 'Page Name',

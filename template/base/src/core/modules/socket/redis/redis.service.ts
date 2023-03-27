@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { OnModuleDestroy } from '@nestjs/common/interfaces';
 import { Observable, Observer } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 
@@ -16,13 +17,18 @@ export interface RedisSubscribeMessage {
 }
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleDestroy {
   public constructor(
     @Inject(REDIS_SUBSCRIBER_CLIENT)
     private readonly redisSubscriberClient: RedisClient,
     @Inject(REDIS_PUBLISHER_CLIENT)
     private readonly redisPublisherClient: RedisClient,
   ) {}
+
+  onModuleDestroy() {
+    this.redisSubscriberClient.disconnect();
+    this.redisPublisherClient.disconnect();
+  }
 
   public fromEvent<T extends RedisSocketEventSendDTO>(
     eventName: string,

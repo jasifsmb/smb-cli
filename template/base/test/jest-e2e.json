@@ -1,9 +1,5 @@
 {
-  "moduleFileExtensions": [
-    "js",
-    "json",
-    "ts"
-  ],
+  "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
@@ -11,11 +7,12 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
+    "src/(.*)": "<rootDir>/../src/$1",
     "@core/mongo/(.*)": "<rootDir>/../libs/mongo/src/$1",
     "@core/mongo": "<rootDir>/../libs/mongo/src",
     "@core/sql/(.*)": "<rootDir>/../libs/sql/src/$1",
     "@core/sql": "<rootDir>/../libs/sql/src",
-    "@core/common/(.*)": "<rootDir>/../libs/common/src/$1",
-    "@core/common": "<rootDir>/../libs/common/src"
+    "@core/email/(.*)": "<rootDir>/../libs/email/src/$1",
+    "@core/email": "<rootDir>/../libs/email/src"
   }
 }
