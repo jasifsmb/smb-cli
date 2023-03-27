@@ -34,7 +34,7 @@ export const addMongoEngine = ({ projectName }: { projectName: string }) => {
 
     format(modulePath);
   } catch (error) {
-    spinner.fail('Error occurred while adding sql engine files.');
+    spinner.fail('Error occurred while adding mongo engine files.');
     logger.error(error);
     process.exit(1);
   }
@@ -90,7 +90,6 @@ const changeDefaultEngine = (configPath: string, project: Project) => {
 };
 
 const copyMongoFiles = (projectDir: string) => {
-  const libsDir = path.join(PKG_ROOT, 'template/extras/libs/mongo');
   const decDir = path.join(PKG_ROOT, 'template/extras/decorators/mongo');
   const modDir = path.join(PKG_ROOT, 'template/extras/modules/mongo');
   const seedsDir = path.join(PKG_ROOT, 'template/extras/seeds/mongo');
@@ -104,7 +103,6 @@ const copyMongoFiles = (projectDir: string) => {
     'template/extras/socket-adapters/socket-state-mongo.adapter.ts',
   );
 
-  const sqlLibsDest = path.join(projectDir, 'libs/mongo');
   const sqlDecDest = path.join(projectDir, 'src/core/decorators/mongo');
   const sqlModDest = path.join(projectDir, 'src/modules/mongo');
   const appGateway = path.join(projectDir, 'src/app.gateway.ts');
@@ -114,7 +112,6 @@ const copyMongoFiles = (projectDir: string) => {
     'src/core/modules/socket/socket-state/socket-state-mongo.adapter.ts',
   );
 
-  fsExtra.copySync(libsDir, sqlLibsDest, { overwrite: true });
   fsExtra.copySync(decDir, sqlDecDest, { overwrite: true });
   fsExtra.copySync(modDir, sqlModDest, { overwrite: true });
   fsExtra.copySync(seedsDir, seedsDest, { overwrite: true });
