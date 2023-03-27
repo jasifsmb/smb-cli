@@ -24,8 +24,8 @@ export const addMongoEngine = ({ projectName }: { projectName: string }) => {
     const modulePath = projectDir + '/src/modules/common.module.ts';
 
     updateCommonModule(modulePath, project);
-    updateRedisIntercepter(modulePath, project);
-    updateRedisService(modulePath, project);
+    updateRedisIntercepter(projectDir + '/src/core/modules/socket/redis-propagator.interceptor.ts', project);
+    updateRedisService(projectDir + '/src/core/modules/socket/redis-propagator.service.ts', project);
 
     spinner.info(
       `Changing default app engine to ${chalk.cyan.bold('Mongo')}\n`,
