@@ -19,6 +19,26 @@ export const getAppModuleChangeParams = (): AppModuleUtils => {
       namedImports: ['EmailModule'],
       importElement: 'EmailModule',
     },
+    recaptcha: {
+      moduleSpecifier: '@core/recaptcha',
+      namedImports: ['RecaptchaModule'],
+      importElement: 'RecaptchaModule',
+    },
+    twilio: {
+      moduleSpecifier: '@core/twilio',
+      namedImports: ['TwilioModule'],
+      importElement: 'TwilioModule',
+    },
+    geocoder: {
+      moduleSpecifier: '@core/geocoder',
+      namedImports: ['GeocoderModule'],
+      importElement: 'GeocoderModule',
+    },
+    firebase: {
+      moduleSpecifier: '@core/firebase',
+      namedImports: ['FirebaseModule'],
+      importElement: 'FirebaseModule',
+    },
   };
 };
 

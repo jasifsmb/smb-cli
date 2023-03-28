@@ -2,21 +2,21 @@ import { Controller } from '@nestjs/common';
 import { MsListener } from 'src/core/core.decorators';
 import { Job, JobResponse } from 'src/core/core.job';
 import { MsClientService } from 'src/core/modules/ms-client/ms-client.service';
-import { SQSService } from './sqs.service';
+import { TwilioService } from './twilio.service';
 
-@Controller('sqs')
-export class SQSController {
+@Controller('twilio')
+export class TwilioController {
   constructor(
-    private readonly sqsService: SQSService,
+    private readonly twilioService: TwilioService,
     private client: MsClientService,
   ) {}
 
   /**
-   * Queue listener for SQS
+   * Queue listener for Twilio
    */
-  @MsListener('controller.sqs')
+  @MsListener('controller.twilio')
   async execute(job: Job): Promise<void> {
-    const response = await this.sqsService[job.action]<JobResponse>(
+    const response = await this.twilioService[job.action]<JobResponse>(
       new Job(job),
     );
     await this.client.jobDone(job, response);

@@ -7,6 +7,7 @@ import { updateAppModule } from './updateAppModule.js';
 import { addSQLEngine } from './addSQLEngine.js';
 import { addMongoEngine } from './addMongoEngine.js';
 import { copyLibModules } from './copyLibModules.js';
+import { resolveModulePaths } from './resolveModulePaths.js';
 
 interface CreateProjectOptions {
   projectName: string;
@@ -46,6 +47,7 @@ export const createProject = async ({
   }
 
   copyLibModules(packages, projectDir);
+  resolveModulePaths(packages, projectDir);
 
   updateAppModule({ projectName, packages });
 

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SQSService } from './sqs.service';
+import { FireAuthService } from './fire-auth.service';
 
-describe('SQSService', () => {
-  let service: SQSService;
+describe('FireAuthService', () => {
+  let service: FireAuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SQSService],
+      providers: [FireAuthService],
     }).compile();
 
-    service = module.get<SQSService>(SQSService);
+    service = module.get<FireAuthService>(FireAuthService);
   });
 
   it('should be defined', () => {

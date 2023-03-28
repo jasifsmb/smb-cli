@@ -11,5 +11,8 @@ export const dependencyVersionMap = {
   '@nestjs-modules/mailer': '^1.8.1',
   nodemailer: '^6.9.1',
   '@types/nodemailer': '^6.4.7',
+  'nestjs-twilio': '^4.1.1',
+  'node-geocoder': '^4.2.0',
+  'firebase-admin': '^11.5.0',
 } as const;
 export type AvailableDependencies = keyof typeof dependencyVersionMap;
