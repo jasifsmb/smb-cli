@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -20,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
+  ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
@@ -34,7 +36,6 @@ import {
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
 import { NotFoundError } from 'src/core/core.errors';
-import { Job } from 'src/core/core.job';
 import {
   Created,
   ErrorResponse,
@@ -69,14 +70,14 @@ export class StateController {
     @Body() createStateDto: CreateStateDto,
   ) {
     const { error, data } = await this.stateService.create(
-      new Job({
+      new SqlJob({
         owner,
         action: 'create',
         body: createStateDto,
       }),
     );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -99,7 +100,7 @@ export class StateController {
     @Body() updateStateDto: UpdateStateDto,
   ) {
     const { error, data } = await this.stateService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -107,7 +108,7 @@ export class StateController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -137,14 +138,14 @@ export class StateController {
   ) {
     const { error, data, offset, limit, count } =
       await this.stateService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -170,14 +171,14 @@ export class StateController {
     @Query() query: any,
   ) {
     const { error, data } = await this.stateService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -207,7 +208,7 @@ export class StateController {
     @Query() query: any,
   ) {
     const { error, data } = await this.stateService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -215,7 +216,7 @@ export class StateController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -235,22 +236,25 @@ export class StateController {
    */
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a state using id' })
+  @ApiQueryDelete()
   @ResponseDeleted(State)
   async delete(
     @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
+    @Query() query: any,
   ) {
     const { error, data } = await this.stateService.delete(
-      new Job({
+      new SqlJob({
         owner,
         action: 'delete',
         id: +id,
+        payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

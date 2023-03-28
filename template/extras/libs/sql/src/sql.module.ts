@@ -2,8 +2,12 @@ import { Op } from 'sequelize';
 
 import { DynamicModule, Module } from '@nestjs/common';
 
+import { DatabaseModule as MongoDatabaseModule } from '@core/mongo/database/database.module';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { Model, ModelStatic, SequelizeOptions } from 'sequelize-typescript';
 import { DatabaseModule } from './database/database.module';
 import { SeederModule } from './seeder/seeder.module';
+import { SqlService } from './sql.service';
 
 export const operatorsAliases = {
   $eq: Op.eq,
@@ -27,9 +31,15 @@ export interface SqlModuleOption {
   seeder?: boolean;
 }
 
+export interface SqlOption {
+  history?: boolean;
+  historyExpireIn?: number;
+  trashExpireIn?: number;
+}
+
 @Module({})
 export class SqlModule {
-  static register(options?: SqlModuleOption): DynamicModule {
+  static root(options?: SqlModuleOption): DynamicModule {
     const imports = [];
     imports.push(DatabaseModule);
     if (options && options.seeder) {
@@ -38,6 +48,32 @@ export class SqlModule {
     return {
       module: SqlModule,
       imports,
+    };
+  }
+
+  static register(
+    entity: ModelStatic<Model>,
+    options?: SqlOption,
+    connection?: SequelizeOptions | string,
+  ): DynamicModule {
+    return {
+      module: DatabaseModule,
+      imports: [
+        SequelizeModule.forFeature([entity], connection),
+        MongoDatabaseModule,
+      ],
+      providers: [
+        {
+          provide: 'MODEL_NAME',
+          useValue: entity.name,
+        },
+        {
+          provide: 'MODEL_OPTIONS',
+          useValue: options || {},
+        },
+        SqlService,
+      ],
+      exports: [SqlService],
     };
   }
 }

@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -22,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
+  ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
@@ -36,7 +38,6 @@ import {
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
 import { NotFoundError } from 'src/core/core.errors';
-import { Job } from 'src/core/core.job';
 import {
   Created,
   ErrorResponse,
@@ -78,14 +79,14 @@ export class PageController {
     @Body() createPageDto: CreatePageDto,
   ) {
     const { error, data } = await this.pageService.create(
-      new Job({
+      new SqlJob({
         owner,
         action: 'create',
         body: createPageDto,
       }),
     );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -109,7 +110,7 @@ export class PageController {
     @Body() updatePageDto: UpdatePageDto,
   ) {
     const { error, data } = await this.pageService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -117,7 +118,7 @@ export class PageController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -147,14 +148,14 @@ export class PageController {
   ) {
     const { error, data, offset, limit, count } =
       await this.pageService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -180,14 +181,14 @@ export class PageController {
     @Query() query: any,
   ) {
     const { error, data } = await this.pageService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -217,7 +218,7 @@ export class PageController {
     @Query() query: any,
   ) {
     const { error, data } = await this.pageService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -225,7 +226,7 @@ export class PageController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -246,22 +247,25 @@ export class PageController {
   @Delete(':id')
   @Roles(Role.Admin)
   @ApiOperation({ summary: 'Delete a page using id' })
+  @ApiQueryDelete()
   @ResponseDeleted(Page)
   async delete(
     @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
+    @Query() query: any,
   ) {
     const { error, data } = await this.pageService.delete(
-      new Job({
+      new SqlJob({
         owner,
         action: 'delete',
         id: +id,
+        payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -286,7 +290,7 @@ export class PageController {
     @Param('name') name: string,
   ) {
     const { error, data } = await this.pageService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: {
@@ -297,7 +301,7 @@ export class PageController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

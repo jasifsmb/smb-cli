@@ -1,11 +1,11 @@
-import path from "path";
-import fs from "fs-extra";
-import { type PackageJson } from "type-fest";
+import path from 'path';
+import fs from 'fs-extra';
+import { type PackageJson } from 'type-fest';
 import {
   dependencyVersionMap,
   type AvailableDependencies,
-} from "~/installers/dependencyVersionMap.js";
-import sortPackageJson from "sort-package-json";
+} from '~/installers/dependencyVersionMap.js';
+import sortPackageJson from 'sort-package-json';
 
 export const addPackageDependency = (opts: {
   dependencies: AvailableDependencies[];
@@ -15,7 +15,7 @@ export const addPackageDependency = (opts: {
   const { dependencies, devMode, projectDir } = opts;
 
   const pkgJson = fs.readJSONSync(
-    path.join(projectDir, "package.json"),
+    path.join(projectDir, 'package.json'),
   ) as PackageJson;
 
   dependencies.forEach((pkgName) => {
@@ -29,7 +29,7 @@ export const addPackageDependency = (opts: {
   });
   const sortedPkgJson = sortPackageJson(pkgJson);
 
-  fs.writeJSONSync(path.join(projectDir, "package.json"), sortedPkgJson, {
+  fs.writeJSONSync(path.join(projectDir, 'package.json'), sortedPkgJson, {
     spaces: 2,
   });
 };

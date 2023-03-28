@@ -6,7 +6,8 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
-import { FileUploadOption } from '../core.decorators';
+import config, { CDNStorage } from 'src/config';
+import { FileUploadOption } from 'src/core/core.decorators';
 
 @Injectable()
 export class UploadInterceptor implements NestInterceptor {
@@ -24,7 +25,7 @@ export class UploadInterceptor implements NestInterceptor {
         }
       }
     }
-    if (!!uploadError) {
+    if (uploadError) {
       return throwError(
         () =>
           new BadRequestException(
@@ -34,7 +35,7 @@ export class UploadInterceptor implements NestInterceptor {
     }
     if (typeof files === 'undefined') return next.handle();
     if (
-      !!this.options.required &&
+      this.options.required &&
       typeof files[this.options.name] === 'undefined'
     ) {
       return throwError(
@@ -48,8 +49,15 @@ export class UploadInterceptor implements NestInterceptor {
       typeof this.options.bodyField === 'string' &&
       typeof files[this.options.name] !== 'undefined'
     ) {
-      body[this.options.bodyField] =
-        files[this.options.name][0].key || files[this.options.name][0].filename;
+      if (typeof this.options.storage === 'undefined')
+        this.options.storage = config().cdnStorage;
+      if (this.options.storage === CDNStorage.Azure)
+        body[this.options.bodyField] = `${
+          files[this.options.name][0].container
+        }/${files[this.options.name][0].blobName}`;
+      else if (this.options.storage === CDNStorage.Aws)
+        body[this.options.bodyField] = files[this.options.name][0].key;
+      else body[this.options.bodyField] = files[this.options.name][0].filename;
     }
     if (
       typeof this.options.bodyField === 'object' &&

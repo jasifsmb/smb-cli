@@ -25,13 +25,13 @@
         "tsConfigPath": "libs/sql/tsconfig.lib.json"
       }
     },
-    "common": {
+    "email": {
       "type": "library",
-      "root": "libs/common",
+      "root": "libs/email",
       "entryFile": "index",
-      "sourceRoot": "libs/common/src",
+      "sourceRoot": "libs/email/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
+        "tsConfigPath": "libs/email/tsconfig.lib.json"
       }
     }
   }

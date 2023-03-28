@@ -1,10 +1,10 @@
-import { Entity } from '@core/sql/entity';
+import { SqlModel } from '@core/sql/sql.model';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
 import { Column, DataType, Table } from 'sequelize-typescript';
 
 @Table
-export class Template extends Entity<Template> {
+export class Template extends SqlModel {
   @Column({ unique: 'name' })
   @ApiProperty({
     description: 'Template Name',

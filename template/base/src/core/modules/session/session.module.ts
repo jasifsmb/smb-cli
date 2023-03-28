@@ -17,7 +17,7 @@ import { SessionService } from './session.service';
       useFactory: (config: ConfigService) => config.get('jwt'),
     }),
   ],
-  exports: [JwtModule],
+  exports: [JwtModule, SessionService],
   providers: [SessionService],
 })
 export class SessionModule {}

@@ -16,7 +16,7 @@ export class SeederService {
       const seed = seeds[index];
       this.logger.log(`Model: ${seed.model}`);
       if (typeof this.connection.models[seed.model] === 'undefined') {
-        this.logger.error(`${seed.model} model not available`);
+        this.logger.log(`Ignoring - ${seed.model} model not available`);
         continue;
       }
       if (seed.action === 'never') {
@@ -56,7 +56,7 @@ export class SeederService {
                 const parent = await this.connection.models[
                   value.model
                 ].findOne(value.where);
-                if (!!parent) body[key] = parent._id;
+                if (parent) body[key] = parent._id;
                 else body[key] = null;
               }
             }

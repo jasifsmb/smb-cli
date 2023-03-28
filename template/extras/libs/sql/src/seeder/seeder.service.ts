@@ -14,6 +14,10 @@ export class SeederService {
     for (let index = 0; index < seeds.length; index++) {
       const seed = seeds[index];
       this.logger.log(`Model: ${seed.model}`);
+      if (typeof this.sequelize.models[seed.model] === 'undefined') {
+        this.logger.log(`Ignoring - ${seed.model} model not available`);
+        continue;
+      }
       if (seed.action === 'never') {
         this.logger.log(`Ignoring - ${seed.model} not required`);
         continue;
@@ -51,7 +55,7 @@ export class SeederService {
                 const parent = await this.sequelize.models[value.model].findOne(
                   { where: value.where },
                 );
-                if (!!parent) body[key] = parent.getDataValue('id');
+                if (parent) body[key] = parent.getDataValue('id');
                 else body[key] = null;
               }
             }

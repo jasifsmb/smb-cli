@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -11,6 +12,7 @@ import {
   Res,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiConsumes,
   ApiExtraModels,
   ApiForbiddenResponse,
@@ -21,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
+  ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
@@ -37,7 +40,6 @@ import {
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
 import { NotFoundError, ValidationError } from 'src/core/core.errors';
-import { Job } from 'src/core/core.job';
 import {
   BadRequest,
   Created,
@@ -54,7 +56,7 @@ import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @ApiTags('user')
-// @ApiBearerAuth()
+@ApiBearerAuth()
 @ApiForbiddenResponse(ResponseForbidden)
 @ApiInternalServerErrorResponse(ResponseInternalServerError)
 @ApiExtraModels(User)
@@ -80,7 +82,7 @@ export class UserController {
     @Query() query: any,
   ) {
     const { error, data } = await this.userService.create(
-      new Job({
+      new SqlJob({
         owner,
         action: 'create',
         body: createUserDto,
@@ -88,7 +90,7 @@ export class UserController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof ValidationError) {
         return BadRequest(res, {
           error,
@@ -120,7 +122,7 @@ export class UserController {
     @Query() query: any,
   ) {
     const { error, data } = await this.userService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: owner.id,
@@ -129,7 +131,7 @@ export class UserController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -163,7 +165,7 @@ export class UserController {
     @Query() query: any,
   ) {
     const { error, data } = await this.userService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -172,7 +174,7 @@ export class UserController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -202,14 +204,14 @@ export class UserController {
   ) {
     const { error, data, offset, limit, count } =
       await this.userService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -235,14 +237,14 @@ export class UserController {
     @Query() query: any,
   ) {
     const { error, data } = await this.userService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -271,7 +273,7 @@ export class UserController {
     @Query() query: any,
   ) {
     const { error, data } = await this.userService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: owner.id,
@@ -279,7 +281,7 @@ export class UserController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -309,7 +311,7 @@ export class UserController {
     @Query() query: any,
   ) {
     const { error, data } = await this.userService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -317,7 +319,7 @@ export class UserController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -338,22 +340,25 @@ export class UserController {
   @Delete(':id')
   @Roles(Role.Admin)
   @ApiOperation({ summary: 'Delete a user using id' })
+  @ApiQueryDelete()
   @ResponseDeleted(User)
   async delete(
     @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
+    @Query() query: any,
   ) {
     const { error, data } = await this.userService.delete(
-      new Job({
+      new SqlJob({
         owner,
         action: 'delete',
         id: +id,
+        payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

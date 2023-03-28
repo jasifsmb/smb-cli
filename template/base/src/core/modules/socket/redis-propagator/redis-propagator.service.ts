@@ -3,7 +3,6 @@ import { tap } from 'rxjs/operators';
 import { Server } from 'socket.io';
 
 import { RedisService } from '../redis/redis.service';
-import { AuthenticatedSocket } from '../socket-state/socket-state.adapter';
 import { SocketStateService } from '../socket-state/socket-state.service';
 import { RedisSocketEventEmitDTO } from './dto/socket-event-emit.dto';
 import { RedisSocketEventSendDTO } from './dto/socket-event-send.dto';

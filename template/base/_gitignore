@@ -40,3 +40,6 @@ lerna-debug.log*
 # public 
 public/*
 !public/assets/
+
+#local testers
+testers/*

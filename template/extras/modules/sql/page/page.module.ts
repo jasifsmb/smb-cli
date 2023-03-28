@@ -1,12 +1,12 @@
+import { SqlModule } from '@core/sql';
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
-import { PageService } from './page.service';
-import { PageController } from './page.controller';
 import { Page } from './entities/page.entity';
+import { PageController } from './page.controller';
+import { PageService } from './page.service';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Page]), ConfigModule],
+  imports: [SqlModule.register(Page), ConfigModule],
   controllers: [PageController],
   providers: [PageService],
 })

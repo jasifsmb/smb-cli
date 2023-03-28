@@ -1,5 +1,6 @@
-export const QueryWhere = {
-  in: 'query',
+import { ApiQueryOptions, ApiResponseOptions } from '@nestjs/swagger';
+
+export const QueryWhere: ApiQueryOptions = {
   name: 'where',
   required: false,
   schema: { format: 'json' },
@@ -34,8 +35,7 @@ export const QueryWhere = {
   },
 };
 
-export const QueryPopulate = {
-  in: 'query',
+export const QueryPopulate: ApiQueryOptions = {
   name: 'populate',
   required: false,
   schema: { format: 'json' },
@@ -58,8 +58,7 @@ export const QueryPopulate = {
   },
 };
 
-export const QuerySort = {
-  in: 'query',
+export const QuerySort: ApiQueryOptions = {
   name: 'sort',
   required: false,
   schema: { format: 'json' },
@@ -92,8 +91,7 @@ export const QuerySort = {
   },
 };
 
-export const QuerySelect = {
-  in: 'query',
+export const QuerySelect: ApiQueryOptions = {
   name: 'select',
   required: false,
   schema: { format: 'json' },
@@ -108,8 +106,7 @@ export const QuerySelect = {
   },
 };
 
-export const QuerySearch = {
-  in: 'query',
+export const QuerySearch: ApiQueryOptions = {
   name: 'search',
   required: false,
   examples: {
@@ -123,8 +120,7 @@ export const QuerySearch = {
   },
 };
 
-export const QueryLimit = {
-  in: 'query',
+export const QueryLimit: ApiQueryOptions = {
   name: 'limit',
   required: false,
   schema: { type: 'integer' },
@@ -144,8 +140,7 @@ export const QueryLimit = {
   },
 };
 
-export const QueryOffset = {
-  in: 'query',
+export const QueryOffset: ApiQueryOptions = {
   name: 'offset',
   required: false,
   schema: { type: 'integer' },
@@ -161,7 +156,23 @@ export const QueryOffset = {
   },
 };
 
-export const ResponseForbidden = {
+export const QueryDeleteMode: ApiQueryOptions = {
+  name: 'mode',
+  required: false,
+  enum: ['soft', 'hard'],
+  examples: {
+    soft: {
+      summary: 'Soft delete mode',
+      value: 'soft',
+    },
+    hard: {
+      summary: 'Hard delete mode',
+      value: 'hard',
+    },
+  },
+};
+
+export const ResponseForbidden: ApiResponseOptions = {
   description: 'Forbidden',
   schema: {
     properties: {
@@ -173,7 +184,7 @@ export const ResponseForbidden = {
   },
 };
 
-export const ResponseInternalServerError = {
+export const ResponseInternalServerError: ApiResponseOptions = {
   description: 'Server error',
   schema: {
     properties: {

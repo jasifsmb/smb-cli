@@ -1,10 +1,9 @@
-import { ModelService, ModelType } from '@core/sql';
+import { ModelService, SqlService } from '@core/sql';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { State } from './entities/state.entity';
 
 @Injectable()
-export class StateService extends ModelService {
+export class StateService extends ModelService<State> {
   /**
    * searchFields
    * @property array of fields to include in search
@@ -17,7 +16,7 @@ export class StateService extends ModelService {
    */
   searchPopulate: string[] = ['country'];
 
-  constructor(@InjectModel(State) model: ModelType<State>) {
-    super(model);
+  constructor(db: SqlService<State>) {
+    super(db);
   }
 }

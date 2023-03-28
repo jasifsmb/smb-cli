@@ -1,10 +1,4 @@
-import { QueryOptions } from 'mongoose';
 import config from 'src/config';
-
-export interface MongoOptions extends QueryOptions {
-  pagination?: boolean;
-  allowEmpty?: boolean;
-}
 
 export interface JobResponse {
   /**
@@ -23,26 +17,6 @@ export interface JobResponse {
    * Response success or error message
    */
   message?: string;
-  /**
-   * Is created flag
-   */
-  created?: boolean;
-  /**
-   * Previous data object
-   */
-  previousData?: any;
-  /**
-   * Offset for pagination
-   */
-  offset?: number;
-  /**
-   * Limit for pagination
-   */
-  limit?: number;
-  /**
-   * Total available records count
-   */
-  count?: number;
 }
 
 export interface Job {
@@ -55,7 +29,7 @@ export interface Job {
    */
   uid?: string;
   /**
-   * user or onwer object on behave this job is running
+   * user or owner object on behave this job is running
    */
   owner?: any;
   /**
@@ -63,65 +37,40 @@ export interface Job {
    */
   action?: string;
   /**
-   * primary key of the model
-   */
-  id?: number | string;
-  /**
-   * body object used for create or update
-   */
-  body?: {
-    [key: string]: any;
-  };
-  /**
    * files object used for upload
    */
   files?: any;
-  /**
-   * array of records used for bulk create
-   */
-  records?: {
-    [key: string]: any;
-  }[];
   /**
    * additional parameters used in services
    */
   payload?: any;
   /**
-   * Job response object
+   * Error object or string
    */
-  response?: JobResponse;
+  error?: any;
+  /**
+   * Log to JobLogs while running as micro service task
+   * @default true
+   */
+  logging?: boolean;
   /**
    * Status of the job
    *
    * @default Pending
    */
   status?: 'Pending' | 'Completed' | 'Errored';
-
-  /**
-   * parameters for mongo
-   */
-  mongo?: MongoOptions;
 }
 
 export class Job {
   constructor(job: Job) {
     this.app = job.app || config().appId;
     this.owner = job.owner || {
-      id: 0,
+      id: null,
     };
     this.uid = job.uid || null;
     this.action = job.action || null;
-    this.id = job.id || null;
-    this.body = job.body || null;
     this.files = job.files || {};
-    this.records = job.records || [];
     this.payload = job.payload || {};
-    this.response = job.response || {};
     this.status = job.status || 'Pending';
-  }
-
-  done?(res: JobResponse): void {
-    this.response = res;
-    this.status = !!this.response.error ? 'Errored' : 'Completed';
   }
 }

@@ -1,12 +1,12 @@
-import chalk from "chalk";
-import * as commander from "commander";
-import inquirer from "inquirer";
-import { DEFAULT_APP_NAME, SMB_NEST_CLI } from "./consts.js";
-import { availablePackages, AvailablePackages } from "./installers/index.js";
-import { getVersion } from "./utils/getCliVersion.js";
-import { getUserPkgManager } from "./utils/getUserPkgManager.js";
-import { logger } from "./utils/logger.js";
-import { validateAppName } from "./utils/validateAppName.js";
+import chalk from 'chalk';
+import * as commander from 'commander';
+import inquirer from 'inquirer';
+import { DEFAULT_APP_NAME, SMB_NEST_CLI } from './consts.js';
+import { availablePackages, AvailablePackages } from './installers/index.js';
+import { getVersion } from './utils/getCliVersion.js';
+import { getUserPkgManager } from './utils/getUserPkgManager.js';
+import { logger } from './utils/logger.js';
+import { validateAppName } from './utils/validateAppName.js';
 
 interface CliFlags {
   noGit: boolean;
@@ -28,61 +28,53 @@ const defaultOptions: CliResults = {
     noGit: false,
     noInstall: false,
     default: false,
-    importAlias: "~/",
+    importAlias: '~/',
   },
 };
 
 export const runCli = async () => {
   const cliResults = defaultOptions;
-  const supportedCommands = ["new", "add"];
+  const supportedCommands = ['new', 'add'];
   const program = new commander.Command().name(SMB_NEST_CLI);
 
   program
-    .description("A CLI for creating SMB Nest Core App")
+    .description('A CLI for creating SMB Nest Core App')
     .addArgument(
-      new commander.Argument("[command]", "CLI command to take action").choices(
-        supportedCommands
-      )
+      new commander.Argument('[command]', 'CLI command to take action').choices(
+        supportedCommands,
+      ),
     )
     .argument(
-      "[dir]",
-      "The name of the application, as well as the name of the directory to create"
+      '[dir]',
+      'The name of the application, as well as the name of the directory to create',
     )
     .option(
-      "--noGit",
-      "Explicitly tell the CLI to not initialize a new git repo in the project",
-      false
+      '--noGit',
+      'Explicitly tell the CLI to not initialize a new git repo in the project',
+      false,
     )
     .option(
-      "--noInstall",
+      '--noInstall',
       "Explicitly tell the CLI to not run the package manager's install command",
-      false
+      false,
     )
     .option(
-      "-y, --default",
-      "Bypass the CLI and use all default options to bootstrap a new SMB Nest Core App",
-      false
+      '-y, --default',
+      'Bypass the CLI and use all default options to bootstrap a new SMB Nest Core App',
+      false,
     )
-    .version(getVersion(), "-v, --version", "Display the version number")
+    .version(getVersion(), '-v, --version', 'Display the version number')
     .parse(process.argv);
 
   // FIXME: TEMPORARY WARNING WHEN USING YARN 3.
-  if (process.env.npm_config_user_agent?.startsWith("yarn/3")) {
+  if (process.env.npm_config_user_agent?.startsWith('yarn/3')) {
     logger.warn(`  WARNING: It looks like you are using Yarn 3. This is currently not supported,
     and likely to result in a crash. Please run smb-nest-cli with another
     package manager such as pnpm, npm, or Yarn Classic.`);
   }
 
-  const command = program.args[0];
-  if (!command) {
-    logger.error(
-      `Need a command to work with the cli. Supported commands: ${supportedCommands.join(
-        ", "
-      )}`
-    );
-    process.exit(0);
-  }
-  if (command !== "new") {
+  const command = program.args[0] || 'new';
+  if (command !== 'new') {
     logger.error(`Command ${chalk.cyan.bold(command)} not implemented yet!`);
     process.exit(0);
   }
@@ -95,13 +87,13 @@ export const runCli = async () => {
 
   try {
     if (
-      process.env.SHELL?.toLowerCase().includes("git") &&
-      process.env.SHELL?.includes("bash")
+      process.env.SHELL?.toLowerCase().includes('git') &&
+      process.env.SHELL?.includes('bash')
     ) {
       logger.warn(`  WARNING: It looks like you are using Git Bash which is non-interactive. Please run smb-nest-cli with another
     terminal such as Windows Terminal or PowerShell if you want to use the interactive CLI.`);
 
-      const error = new Error("Non-interactive environment");
+      const error = new Error('Non-interactive environment');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (error as any).isTTYError = true;
       throw error;
@@ -110,11 +102,11 @@ export const runCli = async () => {
     if (!cliProvidedName) {
       cliResults.appName = await promptAppName();
     }
-    // cliResults.packages = await promptPackages();
+    cliResults.packages = await promptPackages();
 
     const defaultEngine = await promptDefaultEngine();
-    if (defaultEngine === "sql") {
-      cliResults.packages.push("sql");
+    if (defaultEngine === 'sql') {
+      cliResults.packages.push('sql');
     }
 
     if (!cliResults.flags.noGit) {
@@ -134,19 +126,19 @@ export const runCli = async () => {
       const { shouldContinue } = await inquirer.prompt<{
         shouldContinue: boolean;
       }>({
-        name: "shouldContinue",
-        type: "confirm",
+        name: 'shouldContinue',
+        type: 'confirm',
         message: `Continue scaffolding a default SMB Nest CLI app?`,
         default: true,
       });
 
       if (!shouldContinue) {
-        logger.info("Exiting...");
+        logger.info('Exiting...');
         process.exit(0);
       }
 
       logger.info(
-        `Bootstrapping a default SMB Nest Core App in ./${cliResults.appName}`
+        `Bootstrapping a default SMB Nest Core App in ./${cliResults.appName}`,
       );
     } else {
       throw error;
@@ -157,10 +149,10 @@ export const runCli = async () => {
 };
 
 const promptAppName = async (): Promise<string> => {
-  const { appName } = await inquirer.prompt<Pick<CliResults, "appName">>({
-    name: "appName",
-    type: "input",
-    message: "What will your project be called?",
+  const { appName } = await inquirer.prompt<Pick<CliResults, 'appName'>>({
+    name: 'appName',
+    type: 'input',
+    message: 'What will your project be called?',
     default: defaultOptions.appName,
     validate: validateAppName,
     transformer: (input: string) => {
@@ -172,12 +164,12 @@ const promptAppName = async (): Promise<string> => {
 };
 
 const promptPackages = async (): Promise<AvailablePackages[]> => {
-  const { packages } = await inquirer.prompt<Pick<CliResults, "packages">>({
-    name: "packages",
-    type: "checkbox",
-    message: "Which packages would you like to enable?",
+  const { packages } = await inquirer.prompt<Pick<CliResults, 'packages'>>({
+    name: 'packages',
+    type: 'checkbox',
+    message: 'Which packages would you like to enable?',
     choices: availablePackages
-      .filter((p) => p !== "sql")
+      .filter((p) => p !== 'sql')
       .map((pkgName) => ({
         name: pkgName,
         checked: false,
@@ -187,23 +179,23 @@ const promptPackages = async (): Promise<AvailablePackages[]> => {
   return packages;
 };
 
-const promptDefaultEngine = async (): Promise<"sql" | "mongo"> => {
+const promptDefaultEngine = async (): Promise<'sql' | 'mongo'> => {
   const { defaultEngine } = await inquirer.prompt<{
-    defaultEngine: "sql" | "mongo";
+    defaultEngine: 'sql' | 'mongo';
   }>({
-    name: "defaultEngine",
-    type: "list",
-    message: "Choose the default database engnie",
+    name: 'defaultEngine',
+    type: 'list',
+    message: 'Choose the default database engnie',
     choices: [
       {
-        key: "m",
-        name: "Mongo",
-        value: "mongo",
+        key: 'm',
+        name: 'Mongo',
+        value: 'mongo',
       },
       {
-        key: "s",
-        name: "SQL",
-        value: "sql",
+        key: 's',
+        name: 'SQL',
+        value: 'sql',
       },
     ],
   });
@@ -213,16 +205,16 @@ const promptDefaultEngine = async (): Promise<"sql" | "mongo"> => {
 
 const promptGit = async (): Promise<boolean> => {
   const { git } = await inquirer.prompt<{ git: boolean }>({
-    name: "git",
-    type: "confirm",
-    message: "Initialize a new git repository?",
+    name: 'git',
+    type: 'confirm',
+    message: 'Initialize a new git repository?',
     default: true,
   });
 
   if (git) {
-    logger.success("Nice one! Initializing repository!");
+    logger.success('Nice one! Initializing repository!');
   } else {
-    logger.info("Sounds good! You can come back and run git init later.");
+    logger.info('Sounds good! You can come back and run git init later.');
   }
 
   return git;
@@ -232,24 +224,24 @@ const promptInstall = async (): Promise<boolean> => {
   const pkgManager = getUserPkgManager();
 
   const { install } = await inquirer.prompt<{ install: boolean }>({
-    name: "install",
-    type: "confirm",
+    name: 'install',
+    type: 'confirm',
     message:
       `Would you like us to run '${pkgManager}` +
-      (pkgManager === "yarn" ? `'?` : ` install'?`),
+      (pkgManager === 'yarn' ? `'?` : ` install'?`),
     default: true,
   });
 
   if (install) {
     logger.success("Alright. We'll install the dependencies for you!");
   } else {
-    if (pkgManager === "yarn") {
+    if (pkgManager === 'yarn') {
       logger.info(
-        `No worries. You can run '${pkgManager}' later to install the dependencies.`
+        `No worries. You can run '${pkgManager}' later to install the dependencies.`,
       );
     } else {
       logger.info(
-        `No worries. You can run '${pkgManager} install' later to install the dependencies.`
+        `No worries. You can run '${pkgManager} install' later to install the dependencies.`,
       );
     }
   }

@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -20,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
+  ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
@@ -34,7 +36,6 @@ import {
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
 import { NotFoundError } from 'src/core/core.errors';
-import { Job } from 'src/core/core.job';
 import {
   Created,
   ErrorResponse,
@@ -69,14 +70,14 @@ export class CountryController {
     @Body() createCountryDto: CreateCountryDto,
   ) {
     const { error, data } = await this.countryService.create(
-      new Job({
+      new SqlJob({
         owner,
         action: 'create',
         body: createCountryDto,
       }),
     );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -99,7 +100,7 @@ export class CountryController {
     @Body() updateCountryDto: UpdateCountryDto,
   ) {
     const { error, data } = await this.countryService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -107,7 +108,7 @@ export class CountryController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -137,14 +138,14 @@ export class CountryController {
   ) {
     const { error, data, offset, limit, count } =
       await this.countryService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -170,14 +171,14 @@ export class CountryController {
     @Query() query: any,
   ) {
     const { error, data } = await this.countryService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -207,7 +208,7 @@ export class CountryController {
     @Query() query: any,
   ) {
     const { error, data } = await this.countryService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -215,7 +216,7 @@ export class CountryController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -235,22 +236,25 @@ export class CountryController {
    */
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a country using id' })
+  @ApiQueryDelete()
   @ResponseDeleted(Country)
   async delete(
     @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
+    @Query() query: any,
   ) {
     const { error, data } = await this.countryService.delete(
-      new Job({
+      new SqlJob({
         owner,
         action: 'delete',
         id: +id,
+        payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

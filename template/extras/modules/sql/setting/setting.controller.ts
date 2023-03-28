@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -35,7 +36,6 @@ import {
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
 import { NotFoundError } from 'src/core/core.errors';
-import { Job } from 'src/core/core.job';
 import { ErrorResponse, NotFound, Result } from 'src/core/core.responses';
 import { Owner, OwnerDto } from 'src/core/decorators/sql/owner.decorator';
 import { Roles } from 'src/core/decorators/sql/roles.decorator';
@@ -69,7 +69,7 @@ export class SettingController {
     @Body() updateSettingDto: UpdateSettingDto,
   ) {
     const { error, data } = await this.settingService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -77,7 +77,7 @@ export class SettingController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -136,14 +136,14 @@ export class SettingController {
     updateBulkSettingsDto: UpdateBulkSettingDto[],
   ) {
     const { error, data } = await this.settingService.updateBulk(
-      new Job({
+      new SqlJob({
         owner,
         action: 'updateBulk',
         records: updateBulkSettingsDto,
       }),
     );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -167,14 +167,14 @@ export class SettingController {
   ) {
     const { error, data, offset, limit, count } =
       await this.settingService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -200,14 +200,14 @@ export class SettingController {
     @Query() query: any,
   ) {
     const { error, data } = await this.settingService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -237,7 +237,7 @@ export class SettingController {
     @Query() query: any,
   ) {
     const { error, data } = await this.settingService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -245,7 +245,7 @@ export class SettingController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

@@ -1,4 +1,4 @@
-import { Entity } from '@core/sql/entity';
+import { SqlModel } from '@core/sql/sql.model';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsPositive, IsString } from 'class-validator';
 import {
@@ -11,7 +11,7 @@ import {
 import { Country } from '../../country/entities/country.entity';
 
 @Table
-export class State extends Entity<State> {
+export class State extends SqlModel {
   @Column
   @ForeignKey(() => Country)
   @ApiProperty({

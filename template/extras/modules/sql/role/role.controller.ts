@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -19,8 +20,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { NotFoundError } from 'rxjs';
 import {
+  ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
@@ -34,7 +35,7 @@ import {
   ResponseForbidden,
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
-import { Job } from 'src/core/core.job';
+import { NotFoundError } from 'src/core/core.errors';
 import {
   Created,
   ErrorResponse,
@@ -72,14 +73,14 @@ export class RoleController {
     @Body() createRoleDto: CreateRoleDto,
   ) {
     const { error, data } = await this.roleService.create(
-      new Job({
+      new SqlJob({
         owner,
         action: 'create',
         body: createRoleDto,
       }),
     );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -103,7 +104,7 @@ export class RoleController {
     @Body() updateRoleDto: UpdateRoleDto,
   ) {
     const { error, data } = await this.roleService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -111,7 +112,7 @@ export class RoleController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -141,14 +142,14 @@ export class RoleController {
   ) {
     const { error, data, offset, limit, count } =
       await this.roleService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -174,14 +175,14 @@ export class RoleController {
     @Query() query: any,
   ) {
     const { error, data } = await this.roleService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -211,7 +212,7 @@ export class RoleController {
     @Query() query: any,
   ) {
     const { error, data } = await this.roleService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -219,7 +220,7 @@ export class RoleController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -240,22 +241,25 @@ export class RoleController {
   @Delete(':id')
   @Roles(Role.Admin)
   @ApiOperation({ summary: 'Delete a role using id' })
+  @ApiQueryDelete()
   @ResponseDeleted(RoleModel)
   async delete(
     @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
+    @Query() query: any,
   ) {
     const { error, data } = await this.roleService.delete(
-      new Job({
+      new SqlJob({
         owner,
         action: 'delete',
         id: +id,
+        payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

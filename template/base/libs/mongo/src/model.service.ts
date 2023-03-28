@@ -1,8 +1,19 @@
-import { Job, JobResponse } from 'src/core/core.job';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { DeletePayload, ReadPayload, WritePayload } from './mongo.decorator';
+import {
+  MongoCountResponse,
+  MongoCreateResponse,
+  MongoDeleteResponse,
+  MongoGetAllResponse,
+  MongoGetOneResponse,
+  MongoJob,
+  MongoUpdateResponse,
+} from './mongo.job';
 import { MongoService } from './mongo.service';
-import { Model } from 'mongoose';
-export abstract class ModelService extends MongoService {
+
+export class ModelService<M> {
+  public db: MongoService<M>;
   /**
    * searchFields
    * @property array of fields to include in search
@@ -15,29 +26,49 @@ export abstract class ModelService extends MongoService {
    */
   searchPopulate: string[] = [];
 
-  constructor(model: Model<any>) {
-    super(model);
+  constructor(_db: MongoService<M>) {
+    this.db = _db;
   }
 
   /**
    * doBeforeRead
-   * @function function will execute before findAll, findById and findOne function
+   * @function function will execute before findById and findOne function
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeRead(job: Job): Promise<void> {
-    job.response.error = false;
-  }
+  async doBeforeRead(job: MongoJob): Promise<void> {}
 
   /**
-   * doBeforeWrite
+   * doBeforeReadAll
+   * @function function will execute before findAll function
+   * @param {object} job - mandatory - a job object representing the job information
+   * @return {void}
+   */
+  async doBeforeReadAll(job: MongoJob): Promise<void> {}
+
+  /**
+   * doBeforeCount
+   * @function function will execute before findAll function
+   * @param {object} job - mandatory - a job object representing the job information
+   * @return {void}
+   */
+  async doBeforeCount(job: MongoJob): Promise<void> {}
+
+  /**
+   * doBeforeCreate
    * @function function will execute before create and update function
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeWrite(job: Job): Promise<void> {
-    job.response.error = false;
-  }
+  async doBeforeCreate(job: MongoJob): Promise<void> {}
+
+  /**
+   * doBeforeUpdate
+   * @function function will execute before create and update function
+   * @param {object} job - mandatory - a job object representing the job information
+   * @return {void}
+   */
+  async doBeforeUpdate(job: MongoJob): Promise<void> {}
 
   /**
    * doBeforeDelete
@@ -45,9 +76,7 @@ export abstract class ModelService extends MongoService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeDelete(job: Job): Promise<void> {
-    job.response.error = false;
-  }
+  async doBeforeDelete(job: MongoJob): Promise<void> {}
 
   /**
    * findAll
@@ -56,14 +85,14 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @ReadPayload
-  async findAll(job: Job): Promise<JobResponse> {
+  async findAll(job: MongoJob): Promise<MongoGetAllResponse<M>> {
     try {
-      await this.doBeforeRead(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.getAllRecords(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterRead(job);
-      return job.response;
+      await this.doBeforeReadAll(job);
+      if (job.error) throw job.error;
+      const response = await this.db.getAllRecords(job);
+      if (response.error) throw response.error;
+      await this.doAfterReadAll(job, response);
+      return response;
     } catch (error) {
       return { error };
     }
@@ -76,14 +105,13 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @ReadPayload
-  async getCount(job: Job): Promise<JobResponse> {
+  async getCount(job: MongoJob): Promise<MongoCountResponse> {
     try {
-      await this.doBeforeRead(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.countAllRecords(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterRead(job);
-      return job.response;
+      await this.doBeforeCount(job);
+      if (job.error) throw job.error;
+      const response = await this.db.countAllRecords(job);
+      if (response.error) throw response.error;
+      return response;
     } catch (error) {
       return { error };
     }
@@ -96,14 +124,14 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @ReadPayload
-  async findById(job: Job): Promise<JobResponse> {
+  async findById(job: MongoJob): Promise<MongoGetOneResponse<M>> {
     try {
       await this.doBeforeRead(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.findRecordById(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterRead(job);
-      return job.response;
+      if (job.error) throw job.error;
+      const response = await this.db.findRecordById(job);
+      if (response.error) throw response.error;
+      await this.doAfterRead(job, response);
+      return response;
     } catch (error) {
       return { error };
     }
@@ -116,14 +144,14 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @ReadPayload
-  async findOne(job: Job): Promise<JobResponse> {
+  async findOne(job: MongoJob): Promise<MongoGetOneResponse<M>> {
     try {
       await this.doBeforeRead(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.findOneRecord(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterRead(job);
-      return job.response;
+      if (job.error) throw job.error;
+      const response = await this.db.findOneRecord(job);
+      if (response.error) throw response.error;
+      await this.doAfterRead(job, response);
+      return response;
     } catch (error) {
       return { error };
     }
@@ -136,14 +164,14 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @WritePayload
-  async create(job: Job): Promise<JobResponse> {
+  async create(job: MongoJob): Promise<MongoCreateResponse<M>> {
     try {
-      await this.doBeforeWrite(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.createRecord(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterWrite(job);
-      return job.response;
+      await this.doBeforeCreate(job);
+      if (job.error) throw job.error;
+      const response = await this.db.createRecord(job);
+      if (response.error) throw response.error;
+      await this.doAfterCreate(job, response);
+      return response;
     } catch (error) {
       return { error };
     }
@@ -156,14 +184,14 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @WritePayload
-  async update(job: Job): Promise<JobResponse> {
+  async update(job: MongoJob): Promise<MongoUpdateResponse<M>> {
     try {
-      await this.doBeforeWrite(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.updateRecord(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterWrite(job);
-      return job.response;
+      await this.doBeforeUpdate(job);
+      if (job.error) throw job.error;
+      const response = await this.db.updateRecord(job);
+      if (response.error) throw response.error;
+      await this.doAfterUpdate(job, response);
+      return response;
     } catch (error) {
       return { error };
     }
@@ -176,14 +204,14 @@ export abstract class ModelService extends MongoService {
    * @return {object} job response object
    */
   @DeletePayload
-  async delete(job: Job): Promise<JobResponse> {
+  async delete(job: MongoJob): Promise<MongoDeleteResponse<M>> {
     try {
       await this.doBeforeDelete(job);
-      if (!!job.response.error) return job.response;
-      job.response = await this.deleteRecord(job);
-      if (!!job.response.error) return job.response;
-      await this.doAfterDelete(job);
-      return job.response;
+      if (job.error) throw job.error;
+      const response = await this.db.deleteRecord(job);
+      if (response.error) throw response.error;
+      await this.doAfterDelete(job, response);
+      return response;
     } catch (error) {
       return { error };
     }
@@ -191,31 +219,61 @@ export abstract class ModelService extends MongoService {
 
   /**
    * doAfterRead
-   * @function function will execute after findAll, findById and findOne function
+   * @function function will execute after findById and findOne function
    * @param {object} job - mandatory - a job object representing the job information
+   * @param {object} response - mandatory - a object representing the job response information
    * @return {void}
    */
-  async doAfterRead(job: Job): Promise<void> {
-    job.status = !!job.response.error ? 'Errored' : 'Completed';
-  }
+  async doAfterRead(
+    job: MongoJob,
+    response: MongoGetOneResponse<M>,
+  ): Promise<void> {}
 
   /**
-   * doAfterWrite
-   * @function function will execute after create and update function
+   * doAfterReadAll
+   * @function function will execute after findAll function
    * @param {object} job - mandatory - a job object representing the job information
+   * @param {object} response - mandatory - a object representing the job response information
    * @return {void}
    */
-  async doAfterWrite(job: Job): Promise<void> {
-    job.status = !!job.response.error ? 'Errored' : 'Completed';
-  }
+  async doAfterReadAll(
+    job: MongoJob,
+    response: MongoGetAllResponse<M>,
+  ): Promise<void> {}
+
+  /**
+   * doAfterCreate
+   * @function function will execute after create and update function
+   * @param {object} job - mandatory - a job object representing the job information
+   * @param {object} response - mandatory - a object representing the job response information
+   * @return {void}
+   */
+  async doAfterCreate(
+    job: MongoJob,
+    response: MongoCreateResponse<M>,
+  ): Promise<void> {}
+
+  /**
+   * doAfterUpdate
+   * @function function will execute after create and update function
+   * @param {object} job - mandatory - a job object representing the job information
+   * @param {object} response - mandatory - a object representing the job response information
+   * @return {void}
+   */
+  async doAfterUpdate(
+    job: MongoJob,
+    response: MongoUpdateResponse<M>,
+  ): Promise<void> {}
 
   /**
    * doAfterDelete
    * @function function will execute after delete function
    * @param {object} job - mandatory - a job object representing the job information
+   * @param {object} response - mandatory - a object representing the job response information
    * @return {void}
    */
-  async doAfterDelete(job: Job): Promise<void> {
-    job.status = !!job.response.error ? 'Errored' : 'Completed';
-  }
+  async doAfterDelete(
+    job: MongoJob,
+    response: MongoDeleteResponse<M>,
+  ): Promise<void> {}
 }

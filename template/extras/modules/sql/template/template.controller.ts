@@ -1,3 +1,4 @@
+import { SqlJob } from '@core/sql';
 import {
   Body,
   Controller,
@@ -30,7 +31,6 @@ import {
   ResponseInternalServerError,
 } from 'src/core/core.definitions';
 import { NotFoundError } from 'src/core/core.errors';
-import { Job } from 'src/core/core.job';
 import { ErrorResponse, NotFound, Result } from 'src/core/core.responses';
 import { Owner, OwnerDto } from 'src/core/decorators/sql/owner.decorator';
 import { Roles } from 'src/core/decorators/sql/roles.decorator';
@@ -63,7 +63,7 @@ export class TemplateController {
     @Body() updateTemplateDto: UpdateTemplateDto,
   ) {
     const { error, data } = await this.templateService.update(
-      new Job({
+      new SqlJob({
         owner,
         action: 'update',
         id: +id,
@@ -71,7 +71,7 @@ export class TemplateController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -102,14 +102,14 @@ export class TemplateController {
   ) {
     const { error, data, offset, limit, count } =
       await this.templateService.findAll(
-        new Job({
+        new SqlJob({
           owner,
           action: 'findAll',
           payload: { ...query },
         }),
       );
 
-    if (!!error) {
+    if (error) {
       return ErrorResponse(res, {
         error,
         message: `${error.message || error}`,
@@ -136,14 +136,14 @@ export class TemplateController {
     @Query() query: any,
   ) {
     const { error, data } = await this.templateService.findOne(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findOne',
         payload: { ...query },
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,
@@ -174,7 +174,7 @@ export class TemplateController {
     @Query() query: any,
   ) {
     const { error, data } = await this.templateService.findById(
-      new Job({
+      new SqlJob({
         owner,
         action: 'findById',
         id: +id,
@@ -182,7 +182,7 @@ export class TemplateController {
       }),
     );
 
-    if (!!error) {
+    if (error) {
       if (error instanceof NotFoundError) {
         return NotFound(res, {
           error,

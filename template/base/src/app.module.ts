@@ -1,17 +1,16 @@
-import { CommonModule } from "@core/common";
-import { MongoModule } from "@core/mongo";
-import { Module } from "@nestjs/common";
-import { defaultEngine } from "./app.config";
+import { MongoModule } from '@core/mongo';
+import { Module } from '@nestjs/common';
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { CoreModule } from "./core/core.module";
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { CoreModule } from './core/core.module';
+import { CommonModule } from './modules/common.module';
 
 @Module({
   imports: [
     CoreModule,
-    MongoModule.register({ seeder: true }),
-    CommonModule.register({ defaultEngine })
+    MongoModule.root({ seeder: true }),
+    CommonModule.register(),
   ],
   controllers: [AppController],
   providers: [AppService],

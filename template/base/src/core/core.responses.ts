@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import * as moment from 'moment-timezone';
-import { DatabaseError } from 'sequelize';
 
 /* 
   ResponseData
@@ -104,11 +103,5 @@ export function ErrorResponse(
   res: Response,
   data = { error: {}, message: 'Error' },
 ): Response {
-  if (data.error instanceof DatabaseError) {
-    return InternalServerError(res, {
-      error: 'Internal Server Error',
-      message: data.error.name || 'Internal Server Error',
-    });
-  }
   return InternalServerError(res, data);
 }
