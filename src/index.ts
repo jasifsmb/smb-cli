@@ -1,67 +1,43 @@
 #!/usr/bin/env node
-
-import fs from 'fs-extra';
-import path from 'path';
-import { PackageJson } from 'type-fest';
-import { runCli } from './cli.js';
-import { createProject } from './helpers/createProject.js';
-import { initializeGit } from './helpers/git.js';
-import { installDependencies } from './helpers/installDependencies.js';
-import { logNextSteps } from './helpers/logNextSteps.js';
-import { buildPkgInstallerMap } from './installers/index.js';
+import { Command } from 'commander';
+import { newCommand } from './actions/new.js';
+import { SMB_NEST_CLI } from './consts.js';
 import { getVersion } from './utils/getCliVersion.js';
 import { logger } from './utils/logger.js';
-import { parseNameAndPath } from './utils/parseNameAndPath.js';
 import { renderTitle } from './utils/renderTitle.js';
 
-type SNCPackageJSON = PackageJson & {
-  sncMetadata?: {
-    initVersion: string;
-  };
-};
+renderTitle();
 
-const main = async () => {
-  renderTitle();
-  const {
-    appName,
-    packages,
-    flags: { noGit, noInstall, importAlias },
-  } = await runCli();
+const program = new Command();
+program
+  .name(SMB_NEST_CLI)
+  .description('A CLI for creating and managing SMB Nest Core App')
+  .version(getVersion(), '-v, --version', 'Display the version number');
 
-  const usePackages = buildPkgInstallerMap(packages);
-  const [scopedAppName, appDir] = parseNameAndPath(appName);
-
-  const projectDir = await createProject({
-    projectName: appDir,
-    packages: usePackages,
-    importAlias: importAlias,
-    noInstall,
+program
+  .command('new')
+  .description('A CLI for creating SMB Nest Core App')
+  .alias('n')
+  .argument(
+    '[dir]',
+    'The name of the application, as well as the name of the directory to create',
+  )
+  .option(
+    '--noGit',
+    'Explicitly tell the CLI to not initialize a new git repo in the project',
+    false,
+  )
+  .option(
+    '--noInstall',
+    "Explicitly tell the CLI to not run the package manager's install command",
+    false,
+  )
+  .action((str, options) => {
+    newCommand(str, options).catch(handleError);
   });
 
-  const pkgJson = fs.readJSONSync(
-    path.join(projectDir, 'package.json'),
-  ) as SNCPackageJSON;
-  pkgJson.name = scopedAppName;
-  pkgJson.sncMetadata = { initVersion: getVersion() };
-  fs.writeJSONSync(path.join(projectDir, 'package.json'), pkgJson, {
-    spaces: 2,
-  });
-
-  if (!noInstall) {
-    await installDependencies({ projectDir });
-  }
-
-  if (!noGit) {
-    await initializeGit(projectDir);
-  }
-
-  logNextSteps({ projectName: appDir, packages: usePackages, noInstall });
-
-  process.exit(0);
-};
-
-main().catch((err) => {
-  logger.error('Aborting installation...');
+function handleError(err: any) {
+  logger.error('Aborting...');
   if (err instanceof Error) {
     logger.error(err);
   } else {
@@ -71,4 +47,6 @@ main().catch((err) => {
     console.log(err);
   }
   process.exit(1);
-});
+}
+
+program.parse();

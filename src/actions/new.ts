@@ -1,89 +1,56 @@
-import chalk from 'chalk';
-import * as commander from 'commander';
+import fs from 'fs-extra';
 import inquirer from 'inquirer';
-import { DEFAULT_APP_NAME, SMB_NEST_CLI } from './consts.js';
-import { availablePackages, AvailablePackages } from './installers/index.js';
-import { getVersion } from './utils/getCliVersion.js';
-import { getUserPkgManager } from './utils/getUserPkgManager.js';
-import { logger } from './utils/logger.js';
-import { validateAppName } from './utils/validateAppName.js';
+import path from 'path';
+import { PackageJson } from 'type-fest';
+import { SMB_NEST_CLI } from '~/consts.js';
+import { createProject } from '~/helpers/createProject.js';
+import { initializeGit } from '~/helpers/git.js';
+import { installDependencies } from '~/helpers/installDependencies.js';
+import { logNextSteps } from '~/helpers/logNextSteps.js';
+import {
+  availablePackages,
+  AvailablePackages,
+  buildPkgInstallerMap,
+} from '~/installers/index.js';
+import { getVersion } from '~/utils/getCliVersion.js';
+import { getUserPkgManager } from '~/utils/getUserPkgManager.js';
+import { logger } from '~/utils/logger.js';
+import { parseNameAndPath } from '~/utils/parseNameAndPath.js';
+import { validateAppName } from '~/utils/validateAppName.js';
 
-interface CliFlags {
+interface NewCommandFlags {
   noGit: boolean;
   noInstall: boolean;
   default: boolean;
-  importAlias: string;
 }
 
 interface CliResults {
-  appName: string;
   packages: AvailablePackages[];
-  flags: CliFlags;
+  flags: NewCommandFlags;
 }
 
+export type SNCPackageJSON = PackageJson & {
+  sncMetadata?: {
+    initVersion: string;
+  };
+};
+
 const defaultOptions: CliResults = {
-  appName: DEFAULT_APP_NAME,
   packages: [],
   flags: {
     noGit: false,
     noInstall: false,
     default: false,
-    importAlias: '~/',
   },
 };
 
-export const runCli = async () => {
+export const newCommand = async (appName: string, options: NewCommandFlags) => {
   const cliResults = defaultOptions;
-  const supportedCommands = ['new', 'add'];
-  const program = new commander.Command().name(SMB_NEST_CLI);
-
-  program
-    .description('A CLI for creating SMB Nest Core App')
-    .addArgument(
-      new commander.Argument('[command]', 'CLI command to take action').choices(
-        supportedCommands,
-      ),
-    )
-    .argument(
-      '[dir]',
-      'The name of the application, as well as the name of the directory to create',
-    )
-    .option(
-      '--noGit',
-      'Explicitly tell the CLI to not initialize a new git repo in the project',
-      false,
-    )
-    .option(
-      '--noInstall',
-      "Explicitly tell the CLI to not run the package manager's install command",
-      false,
-    )
-    .option(
-      '-y, --default',
-      'Bypass the CLI and use all default options to bootstrap a new SMB Nest Core App',
-      false,
-    )
-    .version(getVersion(), '-v, --version', 'Display the version number')
-    .parse(process.argv);
-
-  // FIXME: TEMPORARY WARNING WHEN USING YARN 3.
-  if (process.env.npm_config_user_agent?.startsWith('yarn/3')) {
-    logger.warn(`  WARNING: It looks like you are using Yarn 3. This is currently not supported,
-    and likely to result in a crash. Please run smb-nest-cli with another
-    package manager such as pnpm, npm, or Yarn Classic.`);
-  }
-
-  const command = program.args[0] || 'new';
-  if (command !== 'new') {
-    logger.error(`Command ${chalk.cyan.bold(command)} not implemented yet!`);
-    process.exit(0);
-  }
-
-  const cliProvidedName = program.args[1];
+  const cliProvidedName = appName;
   if (cliProvidedName) {
-    cliResults.appName = cliProvidedName;
+    appName = cliProvidedName;
   }
-  cliResults.flags = program.opts();
+  cliResults.flags = options;
 
   try {
     if (
@@ -100,7 +67,7 @@ export const runCli = async () => {
     }
 
     if (!cliProvidedName) {
-      cliResults.appName = await promptAppName();
+      appName = await promptAppName(appName);
     }
     cliResults.packages = await promptPackages();
 
@@ -116,8 +83,6 @@ export const runCli = async () => {
     if (!cliResults.flags.noInstall) {
       cliResults.flags.noInstall = !(await promptInstall());
     }
-
-    return cliResults;
   } catch (error) {
     if (error instanceof Error && (error as any).isTTYError) {
       logger.warn(`
@@ -137,23 +102,54 @@ export const runCli = async () => {
         process.exit(0);
       }
 
-      logger.info(
-        `Bootstrapping a default SMB Nest Core App in ./${cliResults.appName}`,
-      );
+      logger.info(`Bootstrapping a default SMB Nest Core App in ./${appName}`);
     } else {
       throw error;
     }
-
-    return cliResults;
   }
+
+  const {
+    packages,
+    flags: { noGit, noInstall },
+  } = cliResults;
+
+  const usePackages = buildPkgInstallerMap(packages);
+  const [scopedAppName, appDir] = parseNameAndPath(appName);
+
+  const projectDir = await createProject({
+    projectName: appDir,
+    packages: usePackages,
+    noInstall,
+  });
+
+  const pkgJson = fs.readJSONSync(
+    path.join(projectDir, 'package.json'),
+  ) as SNCPackageJSON;
+  pkgJson.name = scopedAppName;
+  pkgJson.sncMetadata = { initVersion: getVersion() };
+  fs.writeJSONSync(path.join(projectDir, 'package.json'), pkgJson, {
+    spaces: 2,
+  });
+
+  if (!noInstall) {
+    await installDependencies({ projectDir });
+  }
+
+  if (!noGit) {
+    await initializeGit(projectDir);
+  }
+
+  logNextSteps({ projectName: appDir, packages: usePackages, noInstall });
+
+  process.exit(0);
 };
 
-const promptAppName = async (): Promise<string> => {
-  const { appName } = await inquirer.prompt<Pick<CliResults, 'appName'>>({
+const promptAppName = async (defaultName: string): Promise<string> => {
+  const { appName } = await inquirer.prompt<{ appName: string }>({
     name: 'appName',
     type: 'input',
     message: 'What will your project be called?',
-    default: defaultOptions.appName,
+    default: defaultName,
     validate: validateAppName,
     transformer: (input: string) => {
       return input.trim();
