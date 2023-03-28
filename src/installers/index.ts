@@ -1,7 +1,8 @@
 import { type PackageManager } from '~/utils/getUserPkgManager.js';
+import { emailModuleInstaller } from './email.js';
 import { sqlInstaller } from './sql.js';
 
-export const availablePackages = ['sql'] as const;
+export const availablePackages = ['sql', 'email'] as const;
 export type AvailablePackages = (typeof availablePackages)[number];
 
 export interface InstallerOptions {
@@ -27,5 +28,9 @@ export const buildPkgInstallerMap = (
   sql: {
     inUse: packages.includes('sql'),
     installer: sqlInstaller,
+  },
+  email: {
+    inUse: packages.includes('email'),
+    installer: emailModuleInstaller,
   },
 });

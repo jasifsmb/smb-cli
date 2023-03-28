@@ -14,6 +14,11 @@ export const getAppModuleChangeParams = (): AppModuleUtils => {
       namedImports: ['SqlModule'],
       importElement: 'SqlModule.root({ seeder: true })',
     },
+    email: {
+      moduleSpecifier: '@core/email',
+      namedImports: ['EmailModule'],
+      importElement: 'EmailModule',
+    },
   };
 };
 

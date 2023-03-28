@@ -1,4 +1,4 @@
-import { type PkgInstallerMap } from '~/installers/index.js';
+import { AvailablePackages, type PkgInstallerMap } from '~/installers/index.js';
 import path from 'path';
 import { installPackages } from '~/helpers/installPackages.js';
 import { scaffoldProject } from '~/helpers/scaffoldProject.js';
@@ -6,6 +6,7 @@ import { getUserPkgManager } from '~/utils/getUserPkgManager.js';
 import { updateAppModule } from './updateAppModule.js';
 import { addSQLEngine } from './addSQLEngine.js';
 import { addMongoEngine } from './addMongoEngine.js';
+import { copyLibModules } from './copyLibModules.js';
 
 interface CreateProjectOptions {
   projectName: string;
@@ -43,6 +44,8 @@ export const createProject = async ({
   } else {
     addMongoEngine({ projectName });
   }
+
+  copyLibModules(Object.keys(packages) as AvailablePackages[], projectDir);
 
   updateAppModule({ projectName, packages });
 
