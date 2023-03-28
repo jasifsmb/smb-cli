@@ -102,7 +102,7 @@ export const runCli = async () => {
     if (!cliProvidedName) {
       cliResults.appName = await promptAppName();
     }
-    // cliResults.packages = await promptPackages();
+    cliResults.packages = await promptPackages();
 
     const defaultEngine = await promptDefaultEngine();
     if (defaultEngine === 'sql') {
