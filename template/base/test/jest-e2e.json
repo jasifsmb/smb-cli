@@ -9,10 +9,6 @@
   "moduleNameMapper": {
     "src/(.*)": "<rootDir>/../src/$1",
     "@core/mongo/(.*)": "<rootDir>/../libs/mongo/src/$1",
-    "@core/mongo": "<rootDir>/../libs/mongo/src",
-    "@core/sql/(.*)": "<rootDir>/../libs/sql/src/$1",
-    "@core/sql": "<rootDir>/../libs/sql/src",
-    "@core/email/(.*)": "<rootDir>/../libs/email/src/$1",
-    "@core/email": "<rootDir>/../libs/email/src"
+    "@core/mongo": "<rootDir>/../libs/mongo/src"
   }
 }
