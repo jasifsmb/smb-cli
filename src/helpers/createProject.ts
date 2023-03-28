@@ -1,4 +1,4 @@
-import { AvailablePackages, type PkgInstallerMap } from '~/installers/index.js';
+import { type PkgInstallerMap } from '~/installers/index.js';
 import path from 'path';
 import { installPackages } from '~/helpers/installPackages.js';
 import { scaffoldProject } from '~/helpers/scaffoldProject.js';
@@ -45,7 +45,7 @@ export const createProject = async ({
     addMongoEngine({ projectName });
   }
 
-  copyLibModules(Object.keys(packages) as AvailablePackages[], projectDir);
+  copyLibModules(packages, projectDir);
 
   updateAppModule({ projectName, packages });
 
