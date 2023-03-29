@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { addCommand } from './actions/add.js';
+import { moduleCommand } from './actions/module.js';
 import { newCommand } from './actions/new.js';
 import { SMB_NEST_CLI } from './consts.js';
+import { availablePackages } from './installers/index.js';
 import { getVersion } from './utils/getCliVersion.js';
 import { logger } from './utils/logger.js';
 import { renderTitle } from './utils/renderTitle.js';
@@ -16,7 +19,7 @@ program
 
 program
   .command('new')
-  .description('A CLI for creating SMB Nest Core App')
+  .description('Command for creating a new project')
   .alias('n')
   .argument(
     '[dir]',
@@ -32,8 +35,46 @@ program
     "Explicitly tell the CLI to not run the package manager's install command",
     false,
   )
-  .action((str, options) => {
-    newCommand(str, options).catch(handleError);
+  .action((arg, options) => {
+    newCommand(arg, options).catch(handleError);
+  });
+
+program
+  .command('add')
+  .description('Command for add a third party module to the application')
+  .alias('a')
+  .argument('<module-name>', 'Name of the third party module')
+  .option(
+    '--noInstall',
+    "Explicitly tell the CLI to not run the package manager's install command",
+    false,
+  )
+  .addHelpText(
+    'before',
+    `Supported modules: ${availablePackages
+      .filter((pkg) => pkg !== 'sql')
+      .join(', ')}`,
+  )
+  .action((arg, options) => {
+    addCommand(arg, options).catch(handleError);
+  });
+
+program
+  .command('module')
+  .argument(
+    '<name>',
+    'Name of the module to be created. (Hyphen seperated lowercase words)',
+  )
+  .alias('m')
+  .option(
+    '--noSpec',
+    "Explicitly tell the CLI to not add test files.",
+    false,
+  )
+  .description('Generate a new module')
+  .addHelpText('before', 'Eg: payment, order-checkout')
+  .action((arg, options) => {
+    moduleCommand(arg, options).catch(handleError);
   });
 
 function handleError(err: any) {

@@ -47,7 +47,6 @@ export const createProject = async ({
 
   copyLibModules(packages, projectDir);
   resolveModulePaths(packages, projectDir);
-
   updateAppModule({ projectName, packages });
 
   return projectDir;

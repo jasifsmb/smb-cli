@@ -5,15 +5,17 @@ import { PackageJson } from 'type-fest';
 import { SMB_NEST_CLI } from '~/consts.js';
 import { createProject } from '~/helpers/createProject.js';
 import { initializeGit } from '~/helpers/git.js';
-import { installDependencies } from '~/helpers/installDependencies.js';
+import {
+  installDependencies,
+  promptInstall
+} from '~/helpers/installDependencies.js';
 import { logNextSteps } from '~/helpers/logNextSteps.js';
 import {
   availablePackages,
   AvailablePackages,
-  buildPkgInstallerMap,
+  buildPkgInstallerMap
 } from '~/installers/index.js';
 import { getVersion } from '~/utils/getCliVersion.js';
-import { getUserPkgManager } from '~/utils/getUserPkgManager.js';
 import { logger } from '~/utils/logger.js';
 import { parseNameAndPath } from '~/utils/parseNameAndPath.js';
 import { validateAppName } from '~/utils/validateAppName.js';
@@ -214,33 +216,4 @@ const promptGit = async (): Promise<boolean> => {
   }
 
   return git;
-};
-
-const promptInstall = async (): Promise<boolean> => {
-  const pkgManager = getUserPkgManager();
-
-  const { install } = await inquirer.prompt<{ install: boolean }>({
-    name: 'install',
-    type: 'confirm',
-    message:
-      `Would you like us to run '${pkgManager}` +
-      (pkgManager === 'yarn' ? `'?` : ` install'?`),
-    default: true,
-  });
-
-  if (install) {
-    logger.success("Alright. We'll install the dependencies for you!");
-  } else {
-    if (pkgManager === 'yarn') {
-      logger.info(
-        `No worries. You can run '${pkgManager}' later to install the dependencies.`,
-      );
-    } else {
-      logger.info(
-        `No worries. You can run '${pkgManager} install' later to install the dependencies.`,
-      );
-    }
-  }
-
-  return install;
 };
