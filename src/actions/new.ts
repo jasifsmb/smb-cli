@@ -4,16 +4,17 @@ import path from 'path';
 import { PackageJson } from 'type-fest';
 import { SMB_NEST_CLI } from '~/consts.js';
 import { createProject } from '~/helpers/createProject.js';
+import { promptDefaultEngine } from '~/helpers/getDefaultEngine.js';
 import { initializeGit } from '~/helpers/git.js';
 import {
   installDependencies,
-  promptInstall
+  promptInstall,
 } from '~/helpers/installDependencies.js';
 import { logNextSteps } from '~/helpers/logNextSteps.js';
 import {
   availablePackages,
   AvailablePackages,
-  buildPkgInstallerMap
+  buildPkgInstallerMap,
 } from '~/installers/index.js';
 import { getVersion } from '~/utils/getCliVersion.js';
 import { logger } from '~/utils/logger.js';
@@ -175,30 +176,6 @@ const promptPackages = async (): Promise<AvailablePackages[]> => {
   });
 
   return packages;
-};
-
-const promptDefaultEngine = async (): Promise<'sql' | 'mongo'> => {
-  const { defaultEngine } = await inquirer.prompt<{
-    defaultEngine: 'sql' | 'mongo';
-  }>({
-    name: 'defaultEngine',
-    type: 'list',
-    message: 'Choose the default database engnie',
-    choices: [
-      {
-        key: 'm',
-        name: 'Mongo',
-        value: 'mongo',
-      },
-      {
-        key: 's',
-        name: 'SQL',
-        value: 'sql',
-      },
-    ],
-  });
-
-  return defaultEngine;
 };
 
 const promptGit = async (): Promise<boolean> => {

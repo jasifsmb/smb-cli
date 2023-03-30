@@ -66,10 +66,14 @@ program
     'Name of the module to be created. (Hyphen seperated lowercase words)',
   )
   .alias('m')
+  .option('--noSpec', 'Explicitly tell the CLI to not add test files.', false)
   .option(
-    '--noSpec',
-    "Explicitly tell the CLI to not add test files.",
-    false,
+    '--useSql',
+    'Explicitly tell the CLI to use the default engine as sql.',
+  )
+  .option(
+    '--useMongo',
+    'Explicitly tell the CLI to use the default engine as mongo.',
   )
   .description('Generate a new module')
   .addHelpText('before', 'Eg: payment, order-checkout')
