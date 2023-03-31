@@ -10,7 +10,8 @@
   "type": "module",
   "exports": "./dist/index.js",
   "bin": {
-    "smb-nest-cli": "./dist/index.js"
+    "smb-nest-cli": "./dist/index.js",
+    "snc": "./dist/index.js"
   },
   "engines": {
     "node": ">=14.16"

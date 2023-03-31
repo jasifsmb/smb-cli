@@ -6,6 +6,7 @@ import sqlConfig from '../sql.config';
 
 @Module({
   imports: [
+    ConfigModule,
     SequelizeModule.forRootAsync({
       imports: [
         ConfigModule.forRoot({

@@ -1,27 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TwilioService as NestTwilioService } from 'nestjs-twilio';
-import { Job } from 'src/core/core.job';
+import { Job, JobResponse } from 'src/core/core.job';
+import { Twilio } from 'twilio';
+import { MessageInstance } from 'twilio/lib/rest/api/v2010/account/message';
 
 @Injectable()
 export class TwilioService {
-  public constructor(
-    private readonly twilioService: NestTwilioService,
-    private config: ConfigService,
-  ) {}
+  public twilio: Twilio;
+  public constructor(private _config: ConfigService) {
+    this.twilio = new Twilio(
+      this._config.get('twilio').accountSid,
+      this._config.get('twilio').authToken,
+    );
+  }
 
-  async sendSMS(job: Job) {
-    let error = false,
-      data = null;
+  async sendSMS(job: Job): Promise<JobResponse<MessageInstance>> {
     try {
-      data = await this.twilioService.client.messages.create({
-        from: this.config.get('twilio')?.from,
+      const data = await this.twilio.messages.create({
+        from: this._config.get('twilio')?.from,
         body: job.payload.body,
         to: job.payload.to,
       });
-    } catch (err) {
-      error = err;
+      return { data };
+    } catch (error) {
+      return { error };
     }
-    return { error, data };
   }
 }

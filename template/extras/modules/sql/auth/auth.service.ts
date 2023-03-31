@@ -10,6 +10,7 @@ import { OwnerDto } from 'src/core/decorators/sql/owner.decorator';
 import { SessionService } from 'src/core/modules/session/session.service';
 import { LoginLog } from 'src/modules/mongo/login-log/entities/login-log.entity';
 import { LoginLogService } from 'src/modules/mongo/login-log/login-log.service';
+import { OtpSessionType } from 'src/modules/mongo/otp-session/entities/otp-session.entity';
 import { OtpSessionService } from 'src/modules/mongo/otp-session/otp-session.service';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
@@ -41,7 +42,7 @@ export class AuthService {
           owner,
           body: {
             token: refreshToken,
-            token_expiry: Date.now() + 60 * 24 * 60 * 60 * 1000, // 60 days
+            token_expiry: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days
             user_id: owner.id,
             info,
           },
@@ -82,7 +83,7 @@ export class AuthService {
     try {
       const userWhere: any = { id: userId };
       if (isAdmin) {
-        userWhere.role_id = { [Op.ne]: 1 };
+        userWhere.role = { [Op.ne]: 'Admin' };
       }
       const { error, data: user } = await this.userService.findOne(
         new SqlJob({
@@ -104,7 +105,7 @@ export class AuthService {
             action: 'create',
             body: {
               token: refreshToken,
-              token_expiry: Date.now() + 60 * 24 * 60 * 60 * 1000, // 60 days
+              token_expiry: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days
               user_id: user.getDataValue('id'),
               info,
             },
@@ -144,8 +145,8 @@ export class AuthService {
         body: {
           user_id: user.id,
           otp: otp(),
-          type: 'Login',
-          expire_at: moment().add(15, 'minutes'),
+          type: OtpSessionType.Login,
+          expire_at: new Date(Date.now() + 15 * 60 * 1000),
           payload,
         },
       }),
@@ -175,7 +176,7 @@ export class AuthService {
       });
       await this.loginLogService.update(
         new MongoJob({
-          id: session._id,
+          id: session.id,
           body: {
             token: refreshToken,
           },
@@ -231,8 +232,8 @@ export class AuthService {
         body: {
           user_id: user.id,
           otp: otp(),
-          type: 'Forgot',
-          expire_at: moment().add(15, 'minutes'),
+          type: OtpSessionType.Forgot,
+          expire_at: new Date(Date.now() + 15 * 60 * 1000),
         },
       }),
     );

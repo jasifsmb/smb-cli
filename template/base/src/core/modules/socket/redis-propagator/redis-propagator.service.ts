@@ -91,8 +91,7 @@ export class RedisPropagatorService {
     return this.socketStateService
       .getAll()
       .filter(
-        (socket: AuthenticatedSocket) =>
-          socket.auth?.role_id === eventInfo.roleId,
+        (socket: AuthenticatedSocket) => socket.auth?.role === eventInfo.role,
       )
       .forEach((socket) => socket.emit(event, data));
   };
@@ -114,7 +113,7 @@ export class RedisPropagatorService {
   }
 
   public emitToRole(eventInfo: RedisSocketEventSendDTO): boolean {
-    if (!eventInfo.roleId) {
+    if (!eventInfo.role) {
       return false;
     }
     this.redisService.publish(REDIS_SOCKET_EVENT_EMIT_ROLE_NAME, eventInfo);

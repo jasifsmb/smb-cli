@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
 import {
   BeforeCount,
+  BeforeFind,
   Column,
   CreatedAt,
   DefaultScope,
@@ -11,6 +12,8 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { SqlJobOptions } from './sql.job';
+import { setIncludeAttributes } from './sql.utils';
 
 @DefaultScope(() => ({}))
 @Table({
@@ -87,5 +90,15 @@ export class SqlModel extends Model {
     ) {
       options.distinct = true;
     }
+  }
+
+  /**
+   * Select only specified attributes while using include
+   */
+  @BeforeFind
+  static doBeforeFind(instance: SqlJobOptions) {
+    instance.include = instance.include
+      ? setIncludeAttributes(this, instance.include)
+      : [];
   }
 }

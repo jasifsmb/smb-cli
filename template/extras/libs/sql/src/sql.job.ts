@@ -8,10 +8,10 @@ import {
   FindOrBuildOptions,
   FindOrCreateOptions,
 } from 'sequelize';
-import { Job, JobResponse } from '../../../src/core/core.job';
+import { Job, JobResponse } from 'src/core/core.job';
 import { ModelWrap } from './sql.service';
 
-type SqlOptions = FindOptions &
+export type SqlJobOptions = FindOptions &
   CreateOptions &
   BulkCreateOptions &
   FindAndCountOptions &
@@ -103,7 +103,7 @@ export interface SqlCreateBulkResponse<T> extends JobResponse {
   data?: ModelWrap<T>[];
 }
 
-export interface SqlJob extends Job {
+export interface SqlJob<T = any> extends Job {
   /**
    * primary key name of the model
    */
@@ -115,7 +115,7 @@ export interface SqlJob extends Job {
   /**
    * body object used for create or update
    */
-  body?: {
+  body?: Partial<T> & {
     [key: string]: any;
   };
   /**
@@ -127,11 +127,11 @@ export interface SqlJob extends Job {
   /**
    * parameters for sql
    */
-  options?: SqlOptions;
+  options?: SqlJobOptions;
 }
 
-export class SqlJob extends Job {
-  constructor(job: SqlJob) {
+export class SqlJob<T = any> extends Job {
+  constructor(job: SqlJob<T>) {
     super(job);
     this.pk = job.pk || 'id';
     this.id = job.id || null;

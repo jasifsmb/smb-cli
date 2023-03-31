@@ -1,15 +1,13 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 
 export type JobLogDocument = MongoDocument<JobLog>;
 
 @Schema({
   collection: 'job_logs',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class JobLog extends MongoSchema {
   @Prop({ type: 'Mixed' })
@@ -43,4 +41,4 @@ export class JobLog extends MongoSchema {
   status: string;
 }
 
-export const JobLogSchema = SchemaFactory.createForClass(JobLog);
+export const JobLogSchema = createMongoSchema(JobLog);

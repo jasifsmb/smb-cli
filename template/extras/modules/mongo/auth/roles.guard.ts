@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from 'src/core/decorators/mongo/roles.decorator';
-import { Role } from '../role/role.enum';
+import { Role } from '../user/role.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -16,6 +16,6 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.indexOf(user.role_id) > -1;
+    return requiredRoles.indexOf(user.role) > -1;
   }
 }

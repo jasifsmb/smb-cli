@@ -1,30 +1,35 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { MongoBelongsTo } from '@core/mongo/mongo.decorator';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsString } from 'class-validator';
-import { SchemaTypes } from 'mongoose';
+import { SchemaTypes, Types } from 'mongoose';
 import { Country } from '../../country/entities/country.entity';
 
 export type StateDocument = MongoDocument<State>;
 
 @Schema({
   collection: 'states',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
-  toJSON: { virtuals: true },
+  ...defaultSchemaOptions,
 })
 export class State extends MongoSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Country' })
   @ApiProperty({
-    description: 'Country',
+    type: 'string',
+    description: 'Country ID',
     example: '60f6c774b735412058402be7',
-    anyOf: [{ type: 'string' }, { $ref: getSchemaPath(Country) }],
   })
   @IsMongoId()
-  country_id: string | Country;
+  country_id: Types.ObjectId;
+
+  @MongoBelongsTo('Country', 'country_id')
+  @ApiProperty({
+    description: 'Country',
+    type: () => Country,
+  })
+  country: Country;
 
   @Prop()
   @ApiProperty({
@@ -42,4 +47,4 @@ export class State extends MongoSchema {
   @IsString()
   code: string;
 }
-export const StateSchema = SchemaFactory.createForClass(State);
+export const StateSchema = createMongoSchema(State);

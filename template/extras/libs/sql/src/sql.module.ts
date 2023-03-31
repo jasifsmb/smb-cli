@@ -2,11 +2,11 @@ import { Op } from 'sequelize';
 
 import { DynamicModule, Module } from '@nestjs/common';
 
-import { DatabaseModule as MongoDatabaseModule } from '@core/mongo/database/database.module';
+import { DatabaseModule as MongoDatabaseModule } from '@core/mongo/database';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Model, ModelStatic, SequelizeOptions } from 'sequelize-typescript';
-import { DatabaseModule } from './database/database.module';
-import { SeederModule } from './seeder/seeder.module';
+import { DatabaseModule } from './database';
+import { SeederModule } from './seeder';
 import { SqlService } from './sql.service';
 
 export const operatorsAliases = {

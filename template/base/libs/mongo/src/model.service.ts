@@ -36,7 +36,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeRead(job: MongoJob): Promise<void> {}
+  async doBeforeRead(job: MongoJob<M>): Promise<void> {}
 
   /**
    * doBeforeReadAll
@@ -44,7 +44,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeReadAll(job: MongoJob): Promise<void> {}
+  async doBeforeReadAll(job: MongoJob<M>): Promise<void> {}
 
   /**
    * doBeforeCount
@@ -52,7 +52,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeCount(job: MongoJob): Promise<void> {}
+  async doBeforeCount(job: MongoJob<M>): Promise<void> {}
 
   /**
    * doBeforeCreate
@@ -60,7 +60,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeCreate(job: MongoJob): Promise<void> {}
+  async doBeforeCreate(job: MongoJob<M>): Promise<void> {}
 
   /**
    * doBeforeUpdate
@@ -68,7 +68,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeUpdate(job: MongoJob): Promise<void> {}
+  async doBeforeUpdate(job: MongoJob<M>): Promise<void> {}
 
   /**
    * doBeforeDelete
@@ -76,7 +76,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeDelete(job: MongoJob): Promise<void> {}
+  async doBeforeDelete(job: MongoJob<M>): Promise<void> {}
 
   /**
    * findAll
@@ -85,7 +85,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async findAll(job: MongoJob): Promise<MongoGetAllResponse<M>> {
+  async findAll(job: MongoJob<M>): Promise<MongoGetAllResponse<M>> {
     try {
       await this.doBeforeReadAll(job);
       if (job.error) throw job.error;
@@ -105,7 +105,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async getCount(job: MongoJob): Promise<MongoCountResponse> {
+  async getCount(job: MongoJob<M>): Promise<MongoCountResponse> {
     try {
       await this.doBeforeCount(job);
       if (job.error) throw job.error;
@@ -124,7 +124,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async findById(job: MongoJob): Promise<MongoGetOneResponse<M>> {
+  async findById(job: MongoJob<M>): Promise<MongoGetOneResponse<M>> {
     try {
       await this.doBeforeRead(job);
       if (job.error) throw job.error;
@@ -144,7 +144,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async findOne(job: MongoJob): Promise<MongoGetOneResponse<M>> {
+  async findOne(job: MongoJob<M>): Promise<MongoGetOneResponse<M>> {
     try {
       await this.doBeforeRead(job);
       if (job.error) throw job.error;
@@ -164,7 +164,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @WritePayload
-  async create(job: MongoJob): Promise<MongoCreateResponse<M>> {
+  async create(job: MongoJob<M>): Promise<MongoCreateResponse<M>> {
     try {
       await this.doBeforeCreate(job);
       if (job.error) throw job.error;
@@ -184,7 +184,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @WritePayload
-  async update(job: MongoJob): Promise<MongoUpdateResponse<M>> {
+  async update(job: MongoJob<M>): Promise<MongoUpdateResponse<M>> {
     try {
       await this.doBeforeUpdate(job);
       if (job.error) throw job.error;
@@ -204,7 +204,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @DeletePayload
-  async delete(job: MongoJob): Promise<MongoDeleteResponse<M>> {
+  async delete(job: MongoJob<M>): Promise<MongoDeleteResponse<M>> {
     try {
       await this.doBeforeDelete(job);
       if (job.error) throw job.error;

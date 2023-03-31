@@ -1,6 +1,7 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
 
@@ -8,10 +9,7 @@ export type TemplateDocument = MongoDocument<Template>;
 
 @Schema({
   collection: 'template',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class Template extends MongoSchema {
   @Prop({ unique: true })
@@ -70,4 +68,4 @@ export class Template extends MongoSchema {
   @IsString()
   sms_body: string;
 }
-export const TemplateSchema = SchemaFactory.createForClass(Template);
+export const TemplateSchema = createMongoSchema(Template);

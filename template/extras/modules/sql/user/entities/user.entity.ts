@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsInt,
   IsNumberString,
   IsOptional,
@@ -24,24 +25,24 @@ import {
 import config from 'src/config';
 import { generateHash, uuid } from 'src/core/core.utils';
 import { AuthProvider } from '../../auth/auth-provider.enum';
-import { Role } from '../../role/entities/role.entity';
+import { Role } from '../role.enum';
 
 @DefaultScope(() => ({
   attributes: { exclude: ['password'] },
 }))
 @Table
 export class User extends SqlModel {
-  @ForeignKey(() => Role)
-  @Column
-  @ApiProperty({
-    format: 'int32',
-    description: 'Role ID',
-    example: 1,
+  @Column({
+    type: DataType.ENUM(...Object.keys(Role)),
+    defaultValue: Role.User,
   })
-  @IsInt()
-  @Min(1)
-  @Max(2)
-  role_id: number;
+  @ApiProperty({
+    enum: Role,
+    description: 'Role',
+    example: Role.User,
+  })
+  @IsEnum(Role)
+  role: Role;
 
   @Column({ unique: 'uid' })
   @ApiProperty({
@@ -222,9 +223,6 @@ export class User extends SqlModel {
     readOnly: true,
   })
   last_login_at?: Date;
-
-  @BelongsTo(() => Role)
-  role: Role;
 
   @BeforeSave
   static setName(instance: User) {

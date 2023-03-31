@@ -1,6 +1,7 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsString } from 'class-validator';
 
@@ -14,11 +15,7 @@ export type TaskDocument = MongoDocument<Task>;
 
 @Schema({
   collection: 'tasks',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
-  toJSON: { virtuals: true },
+  ...defaultSchemaOptions,
 })
 export class Task extends MongoSchema {
   @Prop()
@@ -63,4 +60,4 @@ export class Task extends MongoSchema {
   })
   error: any;
 }
-export const TaskSchema = SchemaFactory.createForClass(Task);
+export const TaskSchema = createMongoSchema(Task);

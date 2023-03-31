@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectConnection } from '@nestjs/mongoose';
 import { isArray } from 'class-validator';
 import { Connection } from 'mongoose';
@@ -30,6 +31,7 @@ export class SqlService<M> {
     @Inject('MODEL_OPTIONS') private options: SqlOption,
     sequelize: Sequelize,
     @InjectConnection() private connection: Connection,
+    private _config: ConfigService,
   ) {
     this.model = sequelize.models[modelName];
   }
@@ -39,21 +41,24 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async createRecord(job: SqlJob): Promise<SqlCreateResponse<M>> {
+  async createRecord(job: SqlJob<M>): Promise<SqlCreateResponse<M>> {
     try {
       if (!job.body)
         return { error: 'Error calling createRecord - body is missing' };
-      if (job.owner && job.owner.id) {
-        job.body.created_by = job.owner.id;
-        job.body.updated_by = job.owner.id;
-      }
       const fields = job.options.fields || undefined;
       const include = job.options.include || undefined;
+      const attributes = job.options.attributes || undefined;
       const transaction = job.options.transaction || undefined;
-      const data = await this.model.create(job.body, {
+      const data = this.model.build(job.body, {
+        include,
+      });
+      if (job.owner && job.owner.id) {
+        data.setDataValue('created_by', job.owner.id);
+        data.setDataValue('updated_by', job.owner.id);
+      }
+      await data.save({
         fields,
         transaction,
-        include,
       });
 
       if (this.options.history) {
@@ -68,11 +73,12 @@ export class SqlService<M> {
         });
       }
 
-      if (include) {
+      if (include || attributes) {
         const dataWithInclude = await this.model.findByPk(
           data.getDataValue('id'),
           {
             include,
+            attributes,
           },
         );
         return { data: dataWithInclude };
@@ -88,7 +94,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async createBulkRecords(job: SqlJob): Promise<SqlCreateBulkResponse<M>> {
+  async createBulkRecords(job: SqlJob<M>): Promise<SqlCreateBulkResponse<M>> {
     try {
       if (!job.records || !isArray(job.records) || !job.records.length)
         return {
@@ -130,15 +136,12 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async updateRecord(job: SqlJob): Promise<SqlUpdateResponse<M>> {
+  async updateRecord(job: SqlJob<M>): Promise<SqlUpdateResponse<M>> {
     try {
       if (!job.id)
         return { error: 'Error calling updateRecord - id is missing' };
       if (!job.body)
         return { error: 'Error calling updateRecord - body is missing' };
-      if (job.owner && job.owner.id) {
-        job.body.updated_by = job.owner.id;
-      }
       const pk = job.pk;
       const where = job.options.where || {};
       const data = await this.model.findOne({
@@ -147,10 +150,14 @@ export class SqlService<M> {
       if (data === null) throw new NotFoundError('Record not found');
       const previousData = JSON.parse(JSON.stringify(data));
       for (const prop in job.body) {
-        data[prop] = job.body[prop];
+        data.setDataValue(prop, job.body[prop]);
+      }
+      if (job.owner && job.owner.id) {
+        data.setDataValue('updated_by', job.owner.id);
       }
       const fields = job.options.fields || undefined;
       const include = job.options.include || undefined;
+      const attributes = job.options.attributes || undefined;
       const transaction = job.options.transaction || undefined;
       await data.save({ fields, transaction });
 
@@ -166,11 +173,12 @@ export class SqlService<M> {
         });
       }
 
-      if (include) {
+      if (include || attributes) {
         const dataWithInclude = await this.model.findByPk(
           data.getDataValue('id'),
           {
             include,
+            attributes,
           },
         );
         return { data: dataWithInclude, previousData };
@@ -186,17 +194,18 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async updateBulkRecords(job: SqlJob): Promise<SqlResponse<[number]>> {
+  async updateBulkRecords(job: SqlJob<M>): Promise<SqlResponse<[number]>> {
     try {
       if (!job.body)
         return { error: 'Error calling updateBulkRecords - body is missing' };
+      const body: any = job.body;
       if (job.owner && job.owner.id) {
-        job.body.updated_by = job.owner.id;
+        body.updated_by = job.owner.id;
       }
       const where = job.options.where || undefined;
       const fields = job.options.fields || undefined;
       const transaction = job.options.transaction || undefined;
-      const data = await this.model.update(job.body, {
+      const data = await this.model.update(body, {
         where,
         fields,
         transaction,
@@ -223,7 +232,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async findAndUpdateRecord(job: SqlJob): Promise<SqlUpdateResponse<M>> {
+  async findAndUpdateRecord(job: SqlJob<M>): Promise<SqlUpdateResponse<M>> {
     try {
       if (!job.options.where)
         return {
@@ -231,9 +240,6 @@ export class SqlService<M> {
         };
       if (!job.body)
         return { error: 'Error calling findAndUpdateRecord - body is missing' };
-      if (job.owner && job.owner.id) {
-        job.body.updated_by = job.owner.id;
-      }
       const where = job.options.where || undefined;
       const fields = job.options.fields || undefined;
       const transaction = job.options.transaction || undefined;
@@ -243,7 +249,10 @@ export class SqlService<M> {
       if (data === null) throw new NotFoundError('Record not found');
       const previousData = JSON.parse(JSON.stringify(data));
       for (const prop in job.body) {
-        data[prop] = job.body[prop];
+        data.setDataValue(prop, job.body[prop]);
+      }
+      if (job.owner && job.owner.id) {
+        data.setDataValue('updated_by', job.owner.id);
       }
       await data.save({ fields, transaction });
 
@@ -270,10 +279,14 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async getAllRecords(job: SqlJob): Promise<SqlGetAllResponse<M>> {
+  async getAllRecords(job: SqlJob<M>): Promise<SqlGetAllResponse<M>> {
     try {
       const offset = job.options.offset;
-      const limit = job.options.limit;
+      const limit = job.options.limit
+        ? +job.options.limit === -1
+          ? 1000
+          : +job.options.limit
+        : this._config.get('paginationLimit');
       const where = job.options.where || undefined;
       const attributes = job.options.attributes || undefined;
       const include = job.options.include || undefined;
@@ -313,7 +326,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async countAllRecords(job: SqlJob): Promise<SqlCountResponse> {
+  async countAllRecords(job: SqlJob<M>): Promise<SqlCountResponse> {
     try {
       const where = job.options.where || undefined;
       const attributes = job.options.attributes || undefined;
@@ -339,7 +352,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async findRecordById(job: SqlJob): Promise<SqlGetOneResponse<M>> {
+  async findRecordById(job: SqlJob<M>): Promise<SqlGetOneResponse<M>> {
     try {
       if (!job.id)
         return { error: 'Error calling findRecordById - id is missing' };
@@ -374,7 +387,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async findOneRecord(job: SqlJob): Promise<SqlGetOneResponse<M>> {
+  async findOneRecord(job: SqlJob<M>): Promise<SqlGetOneResponse<M>> {
     try {
       if (!job.options.where)
         return {
@@ -416,7 +429,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async deleteRecord(job: SqlJob): Promise<SqlDeleteResponse<M>> {
+  async deleteRecord(job: SqlJob<M>): Promise<SqlDeleteResponse<M>> {
     try {
       if (!job.id)
         return { error: 'Error calling deleteRecord - id is missing' };
@@ -455,7 +468,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async findAndDeleteRecord(job: SqlJob): Promise<SqlDeleteResponse<M>> {
+  async findAndDeleteRecord(job: SqlJob<M>): Promise<SqlDeleteResponse<M>> {
     try {
       if (!job.options.where)
         return {
@@ -496,7 +509,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async deleteBulkRecords(job: SqlJob): Promise<SqlResponse<number>> {
+  async deleteBulkRecords(job: SqlJob<M>): Promise<SqlResponse<number>> {
     try {
       const where = job.options.where || undefined;
       const transaction = job.options.transaction || undefined;
@@ -526,7 +539,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async restoreRecord(job: SqlJob): Promise<SqlGetOneResponse<M>> {
+  async restoreRecord(job: SqlJob<M>): Promise<SqlGetOneResponse<M>> {
     try {
       if (!job.id)
         return { error: 'Error calling restoreRecord - id is missing' };
@@ -550,7 +563,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async findOrCreate(job: SqlJob): Promise<SqlCreateResponse<M>> {
+  async findOrCreate(job: SqlJob<M>): Promise<SqlCreateResponse<M>> {
     try {
       if (!job.body)
         return { error: 'Error calling findOrCreate - body is missing' };
@@ -558,28 +571,41 @@ export class SqlService<M> {
         return {
           error: 'Error calling findOrCreate - sql.where is missing',
         };
+      const body: any = job.body;
+      if (job.owner && job.owner.id) {
+        body.created_by = job.owner.id;
+        body.updated_by = job.owner.id;
+      }
       const where = job.options.where || undefined;
       const attributes = job.options.attributes || undefined;
       const include = job.options.include || undefined;
-      if (job.owner && job.owner.id) {
-        job.body.created_by = job.owner.id;
-        job.body.updated_by = job.owner.id;
-      }
       const fields = job.options.fields || undefined;
       const transaction = job.options.transaction || undefined;
       const lock = job.options.lock || undefined;
       const paranoid =
         typeof job.options.paranoid === 'boolean' ? job.options.paranoid : true;
-      const [data, created] = await this.model.findCreateFind({
-        defaults: job.body,
+      const [data, created] = await this.model.findOrBuild({
         where,
         attributes,
         include,
         paranoid,
-        fields,
         transaction,
         lock,
       });
+
+      if (created) {
+        for (const prop in job.body) {
+          data.setDataValue(prop, job.body[prop]);
+        }
+        if (job.owner && job.owner.id) {
+          data.setDataValue('created_by', job.owner.id);
+          data.setDataValue('updated_by', job.owner.id);
+        }
+        await data.save({
+          fields,
+          transaction,
+        });
+      }
 
       if (this.options.history) {
         // Create history
@@ -604,7 +630,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async createOrUpdate(job: SqlJob): Promise<SqlCreateResponse<M>> {
+  async createOrUpdate(job: SqlJob<M>): Promise<SqlCreateResponse<M>> {
     try {
       if (!job.body)
         return { error: 'Error calling createOrUpdate - body is missing' };
@@ -619,10 +645,6 @@ export class SqlService<M> {
       const transaction = job.options.transaction || undefined;
       const paranoid =
         typeof job.options.paranoid === 'boolean' ? job.options.paranoid : true;
-      if (job.owner && job.owner.id) {
-        job.body.created_by = job.owner.id;
-        job.body.updated_by = job.owner.id;
-      }
       const [data, created] = await this.model.findOrBuild({
         where,
         attributes,
@@ -631,7 +653,13 @@ export class SqlService<M> {
       });
       const previousData = data.toJSON();
       for (const prop in job.body) {
-        data[prop] = job.body[prop];
+        data.setDataValue(prop, job.body[prop]);
+      }
+      if (created && job.owner && job.owner.id) {
+        data.setDataValue('created_by', job.owner.id);
+      }
+      if (job.owner && job.owner.id) {
+        data.setDataValue('updated_by', job.owner.id);
       }
       await data.save({ fields, transaction });
 
@@ -659,7 +687,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async _findAll(job: SqlJob): Promise<SqlGetAllResponse<M>> {
+  async _findAll(job: SqlJob<M>): Promise<SqlGetAllResponse<M>> {
     try {
       const data = await this.model.findAll(job.options);
       return { data };
@@ -673,7 +701,7 @@ export class SqlService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async _findOne(job: SqlJob): Promise<SqlGetOneResponse<M>> {
+  async _findOne(job: SqlJob<M>): Promise<SqlGetOneResponse<M>> {
     try {
       const data = await this.model.findOne(job.options);
       return { data };

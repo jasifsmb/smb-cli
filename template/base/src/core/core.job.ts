@@ -1,6 +1,6 @@
 import config from 'src/config';
 
-export interface JobResponse {
+export interface JobResponse<T = any> {
   /**
    * Error object or string
    */
@@ -12,7 +12,7 @@ export interface JobResponse {
   /**
    * Response data
    */
-  data?: any;
+  data?: T;
   /**
    * Response success or error message
    */

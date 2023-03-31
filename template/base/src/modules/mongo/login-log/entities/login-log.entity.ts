@@ -1,16 +1,14 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
 export type LoginLogDocument = MongoDocument<LoginLog>;
 
 @Schema({
   collection: 'login_logs',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class LoginLog extends MongoSchema {
   @Prop({ type: 'Mixed' })
@@ -70,4 +68,4 @@ export class LoginLog extends MongoSchema {
   info: any;
 }
 
-export const LoginLogSchema = SchemaFactory.createForClass(LoginLog);
+export const LoginLogSchema = createMongoSchema(LoginLog);

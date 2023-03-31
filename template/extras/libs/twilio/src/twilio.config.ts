@@ -1,9 +1,10 @@
 import { registerAs } from '@nestjs/config';
-import { TwilioModuleOptions } from 'nestjs-twilio';
 
 export default registerAs(
   'twilio',
-  (): TwilioModuleOptions & {
+  (): {
+    accountSid?: string;
+    authToken?: string;
     from?: string;
   } => ({
     accountSid: process.env.TWILIO_ACCOUNT_SID,

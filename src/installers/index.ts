@@ -5,6 +5,7 @@ import { geocoderModuleInstaller } from './geocoder.js';
 import { recaptchaModuleInstaller } from './recaptcha.js';
 import { sqlInstaller } from './sql.js';
 import { twilioModuleInstaller } from './twilio.js';
+import { stripeModuleInstaller } from './stripe.js';
 
 export const availablePackages = [
   'sql',
@@ -13,6 +14,7 @@ export const availablePackages = [
   'twilio',
   'geocoder',
   'firebase',
+  'stripe',
 ] as const;
 export type AvailablePackages = (typeof availablePackages)[number];
 
@@ -59,5 +61,9 @@ export const buildPkgInstallerMap = (
   firebase: {
     inUse: packages.includes('firebase'),
     installer: firebaseModuleInstaller,
+  },
+  stripe: {
+    inUse: packages.includes('stripe'),
+    installer: stripeModuleInstaller,
   },
 });

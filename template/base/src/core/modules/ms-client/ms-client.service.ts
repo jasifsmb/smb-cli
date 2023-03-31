@@ -20,7 +20,7 @@ export class MsClientService {
           }),
         );
         if (error) throw error;
-        job.uid = data._id;
+        job.uid = data.id;
         this.client.emit(queue, job);
         return { data };
       } else {

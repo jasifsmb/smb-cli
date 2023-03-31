@@ -49,7 +49,7 @@ import {
 } from 'src/core/core.responses';
 import { Owner, OwnerDto } from 'src/core/decorators/mongo/owner.decorator';
 import { Roles } from 'src/core/decorators/mongo/roles.decorator';
-import { Role } from '../role/role.enum';
+import { Role } from './role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';

@@ -1,73 +1,90 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+  <a href="https://www.newagesmb.com/" target="_blank"><img src="https://raw.githubusercontent.com/NewAgeSMBDevelopers/smb-logo/main/smb-logo.png" width="320" alt="Newage Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+<p align="center">A progressive <a href="http://nestjs.com/" target="_blank">NestJs</a> framework for building efficient and scalable server-side applications.</p>
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Core framework developed based on [NestJs](https://github.com/nestjs/nest) framework for application backend.
+
+## Requirements
+
+- <a href="https://nodejs.org/en/download/" target="_blank">Node Js</a>
+- Mysql
+- Mongo
+- Redis (<a href="https://redis.io/download" target="_blank">Linux</a> | <a href="https://github.com/tporadowski/redis/releases" target="_blank">Windows</a>)
+- <a href="https://docs.nestjs.com/#installation" target="_blank">Nest CLI</a>
+
+## Setup
+
+```bash
+$ git clone https://github.com/NewAgeSMBDevelopers/nest-core-v2
+```
 
 ## Installation
 
 ```bash
-$ yarn install
+$ npm install
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
+$ npm run start
 
 # production mode
-$ yarn run start:prod
+$ npm run prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ yarn run test
+$ npm run test
 
 # e2e tests
-$ yarn run test:e2e
+$ npm run test:e2e
 
 # test coverage
-$ yarn run test:cov
+$ npm run test:cov
+
+# testing a service individually
+# create a test script under testers/ folder and run using npx
+$ npx ts-node -r tsconfig-paths/register testers/twilio-sendSms.ts
 ```
 
-## Support
+## Build
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+$ npm run build
+```
 
-## Stay in touch
+## Documentation
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- [Documentation](https://github.com/NewAgeSMBDevelopers/nest-core-v2/blob/main/docs/index.md)
 
-## License
+## Code documentation
 
-Nest is [MIT licensed](LICENSE).
+```bash
+$ npx @compodoc/compodoc -p tsconfig.json -s
+```
+
+## API documentation
+
+- <a href="http://localhost:3000/docs/" target="_blank">http://localhost:3000/docs/</a>
+
+## References
+
+- <a target="_blank" href="http://es6-features.org/">ES6</a>
+- <a target="_blank" href="https://www.typescriptlang.org/docs/">TypeScript</a>
+- <a target="_blank" href="https://nestjs.com/">Nest JS</a>
+- <a target="_blank" href="https://mongoosejs.com/">Mongoose (MongoDB)</a>
+- <a target="_blank" href="https://sequelize.org/master/">Sequelize (SQL ORM)</a>
+- <a target="_blank" href="https://github.com/RobinBuschmann/sequelize-typescript">Sequelize TypeScript</a>
+- <a target="_blank" href="https://swagger.io/docs/specification/about/">Swagger JS (OpenAPI)</a>
+- <a target="_blank" href="http://www.passportjs.org/">Passport JS (Authentication)</a>
+- <a target="_blank" href="https://github.com/expressjs/multer">Multer (File upload)</a>
+- <a target="_blank" href="https://handlebarsjs.com/">Handlebars JS (HTML template)</a>
+- <a target="_blank" href="https://github.com/visionmedia/supertest">SuperTest (Testing)</a>

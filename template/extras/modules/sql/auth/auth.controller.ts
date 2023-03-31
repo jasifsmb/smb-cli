@@ -18,7 +18,7 @@ import { Public } from 'src/core/decorators/public.decorator';
 import { Owner, OwnerDto } from 'src/core/decorators/sql/owner.decorator';
 import { Roles } from 'src/core/decorators/sql/roles.decorator';
 import { LoginLog } from 'src/modules/mongo/login-log/entities/login-log.entity';
-import { Role } from '../role/role.enum';
+import { Role } from '../user/role.enum';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginAsDto } from './dto/login-as.dto';
