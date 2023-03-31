@@ -129,14 +129,15 @@ export const moduleCommand = async (
     : options.useSql
     ? 'sql'
     : undefined;
-  if (!userDefinedDefaultEngine)
+  if (!userDefinedDefaultEngine) {
+    spinner.stopAndPersist();
     userDefinedDefaultEngine = await promptDefaultEngine();
-
+  }
   const defaultEngineModule =
     userDefinedDefaultEngine == 'sql'
       ? sqlSampleModulePath
       : mongoSampleModulePath;
-
+  spinner.start();
   fsExtra.copySync(defaultEngineModule, destinationPath, { overwrite: true });
 
   const project = new Project();
