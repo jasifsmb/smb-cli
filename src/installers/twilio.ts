@@ -4,7 +4,7 @@ import { addPackageDependency } from '~/utils/addPackageDependency.js';
 export const twilioModuleInstaller: Installer = ({ projectDir }) => {
   addPackageDependency({
     projectDir,
-    dependencies: ['nestjs-twilio'],
+    dependencies: ['twilio'],
     devMode: false,
   });
 

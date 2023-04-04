@@ -20,7 +20,7 @@ export class LocalAuthService {
     const { error, data } = await this._user.db.findOneRecord(
       new MongoJob({
         options: {
-          attributes: { include: ['password'] },
+          projection: '+password',
           where: { email: username },
           allowEmpty: true,
         },
@@ -37,9 +37,7 @@ export class LocalAuthService {
       }
       data.last_login_at = new Date();
       await data.save();
-      const user = data.toJSON();
-      delete user.password;
-      return { error: false, user };
+      return { error: false, user: data };
     } else {
       return { error: 'Invalid credentials' };
     }

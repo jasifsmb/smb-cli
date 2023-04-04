@@ -7,7 +7,7 @@ import { PKG_ROOT } from '~/consts.js';
 import { type InstallerOptions } from '~/installers/index.js';
 import { logger } from '~/utils/logger.js';
 
-// This bootstraps the base Next.js application
+// This bootstraps the base Nest.js application
 export const scaffoldProject = async ({
   projectName,
   projectDir,
@@ -105,7 +105,7 @@ export const scaffoldProject = async ({
   );
   fs.renameSync(
     path.join(projectDir, '_env.example'),
-    path.join(projectDir, '.env.example'),
+    path.join(projectDir, '.env'),
   );
   fs.renameSync(
     path.join(projectDir, '_eslintrc.js'),

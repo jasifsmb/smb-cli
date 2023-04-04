@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  Req,
   Res,
 } from '@nestjs/common';
 import {
@@ -19,12 +18,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
+  ApiQueryCountAll,
   ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
+  ResponseCountAll,
   ResponseCreated,
   ResponseDeleted,
   ResponseGetAll,
@@ -42,29 +43,31 @@ import {
   NotFound,
   Result,
 } from 'src/core/core.responses';
+import { pluralizeString, snakeCase } from 'src/core/core.utils';
 import { Owner, OwnerDto } from 'src/core/decorators/mongo/owner.decorator';
 import { CreateStateDto } from './dto/create-state.dto';
 import { UpdateStateDto } from './dto/update-state.dto';
 import { State } from './entities/state.entity';
 import { StateService } from './state.service';
 
-@ApiTags('state')
+const entity = snakeCase(State.name);
+
+@ApiTags(entity)
 @ApiBearerAuth()
 @ApiForbiddenResponse(ResponseForbidden)
 @ApiInternalServerErrorResponse(ResponseInternalServerError)
 @ApiExtraModels(State)
-@Controller('state')
+@Controller(entity)
 export class StateController {
   constructor(private readonly stateService: StateService) {}
 
   /**
-   * Create a new State
+   * Create a new entity document
    */
   @Post()
-  @ApiOperation({ summary: 'Create a new state' })
+  @ApiOperation({ summary: `Create new ${entity}` })
   @ResponseCreated(State)
   async create(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Body() createStateDto: CreateStateDto,
@@ -83,17 +86,16 @@ export class StateController {
         message: `${error.message || error}`,
       });
     }
-    return Created(res, { data: { state: data }, message: 'Created' });
+    return Created(res, { data: { [entity]: data }, message: 'Created' });
   }
 
   /**
-   * Update a State using id
+   * Update an entity document by using id
    */
   @Put(':id')
-  @ApiOperation({ summary: 'Update a state using id' })
+  @ApiOperation({ summary: `Update ${entity} using id` })
   @ResponseUpdated(State)
   async update(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: string,
@@ -120,18 +122,17 @@ export class StateController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { state: data }, message: 'Updated' });
+    return Result(res, { data: { [entity]: data }, message: 'Updated' });
   }
 
   /**
-   * Return all States list
+   * Return all entity documents list
    */
   @Get()
-  @ApiOperation({ summary: 'Get all states' })
+  @ApiOperation({ summary: `Get all ${pluralizeString(entity)}` })
   @ApiQueryGetAll()
   @ResponseGetAll(State)
   async findAll(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Query() query: any,
@@ -152,20 +153,51 @@ export class StateController {
       });
     }
     return Result(res, {
-      data: { states: data, offset, limit, count },
+      data: { [pluralizeString(entity)]: data, offset, limit, count },
       message: 'Ok',
     });
   }
 
   /**
-   * Find one State
+   * Return count of entity documents
+   */
+  @Get('count')
+  @ApiOperation({ summary: `Get count of ${pluralizeString(entity)}` })
+  @ApiQueryCountAll()
+  @ResponseCountAll()
+  async countAll(
+    @Res() res: Response,
+    @Owner() owner: OwnerDto,
+    @Query() query: any,
+  ) {
+    const { error, count } = await this.stateService.getCount(
+      new MongoJob({
+        owner,
+        action: 'getCount',
+        payload: { ...query },
+      }),
+    );
+
+    if (!!error) {
+      return ErrorResponse(res, {
+        error,
+        message: `${error.message || error}`,
+      });
+    }
+    return Result(res, {
+      data: { count },
+      message: 'Ok',
+    });
+  }
+
+  /**
+   * Find one entity document
    */
   @Get('find')
-  @ApiOperation({ summary: 'Find a state' })
+  @ApiOperation({ summary: `Find one ${entity}` })
   @ApiQueryGetOne()
   @ResponseGetOne(State)
   async findOne(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Query() query: any,
@@ -190,18 +222,17 @@ export class StateController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { state: data }, message: 'Ok' });
+    return Result(res, { data: { [entity]: data }, message: 'Ok' });
   }
 
   /**
-   * Get a State by id
+   * Get an entity document by using id
    */
   @Get(':id')
-  @ApiOperation({ summary: 'Get a state using id' })
+  @ApiOperation({ summary: `Find ${entity} using id` })
   @ApiQueryGetById()
   @ResponseGetOne(State)
   async findById(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: string,
@@ -228,18 +259,17 @@ export class StateController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { state: data }, message: 'Ok' });
+    return Result(res, { data: { [entity]: data }, message: 'Ok' });
   }
 
   /**
-   * Delete a State using id
+   * Delete an entity document by using id
    */
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a state using id' })
+  @ApiOperation({ summary: `Delete ${entity} using id` })
   @ApiQueryDelete()
   @ResponseDeleted(State)
   async delete(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: string,
@@ -266,6 +296,6 @@ export class StateController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { state: data }, message: 'Deleted' });
+    return Result(res, { data: { [entity]: data }, message: 'Deleted' });
   }
 }

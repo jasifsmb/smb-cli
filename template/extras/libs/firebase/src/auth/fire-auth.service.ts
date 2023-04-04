@@ -1,4 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  DeleteUsersResult,
+  ListUsersResult,
+} from 'firebase-admin/lib/auth/base-auth';
+import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
+import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import { Job, JobResponse } from 'src/core/core.job';
 import { FirebaseAdminSDK, FIREBASE_ADMIN_INJECT } from '../admin';
 
@@ -14,7 +20,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async listUsers(job: Job): Promise<JobResponse> {
+  async listUsers(job: Job): Promise<JobResponse<ListUsersResult>> {
     try {
       const limit = job.payload.limit;
       const page = job.payload.page;
@@ -33,7 +39,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async getUser(job: Job): Promise<JobResponse> {
+  async getUser(job: Job): Promise<JobResponse<UserRecord>> {
     try {
       const uid = job.payload.uid;
       const userRecord = await this.firebaseAdmin.auth().getUser(uid);
@@ -49,7 +55,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async getUserByEmail(job: Job): Promise<JobResponse> {
+  async getUserByEmail(job: Job): Promise<JobResponse<UserRecord>> {
     try {
       const email = job.payload.email;
       const userRecord = await this.firebaseAdmin.auth().getUserByEmail(email);
@@ -65,7 +71,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async getUserByPhoneNumber(job: Job): Promise<JobResponse> {
+  async getUserByPhoneNumber(job: Job): Promise<JobResponse<UserRecord>> {
     try {
       const phone = job.payload.phone;
       const userRecord = await this.firebaseAdmin
@@ -83,7 +89,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async createUser(job: Job): Promise<JobResponse> {
+  async createUser(job: Job): Promise<JobResponse<UserRecord>> {
     try {
       const body = job.payload.body;
       const claims = job.payload.claims || null;
@@ -105,7 +111,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async updateUser(job: Job): Promise<JobResponse> {
+  async updateUser(job: Job): Promise<JobResponse<UserRecord>> {
     try {
       const uid = job.payload.uid;
       const body = job.payload.body;
@@ -128,7 +134,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information to delete Entity
    * @return {object} { error, data }
    */
-  async deleteUser(job: Job): Promise<JobResponse> {
+  async deleteUser(job: Job): Promise<JobResponse<void>> {
     try {
       const uid = job.payload.uid;
       const response = await this.firebaseAdmin.auth().deleteUser(uid);
@@ -144,7 +150,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information to delete Entity
    * @return {object} { error, data }
    */
-  async deleteUsers(job: Job): Promise<JobResponse> {
+  async deleteUsers(job: Job): Promise<JobResponse<DeleteUsersResult>> {
     try {
       const uids = job.payload.uids;
       const deleteUsersResult = await this.firebaseAdmin
@@ -162,7 +168,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async createCustomToken(job: Job): Promise<JobResponse> {
+  async createCustomToken(job: Job): Promise<JobResponse<string>> {
     try {
       const uid = job.payload.uid;
       const additionalClaims = job.payload.additionalClaims || null;
@@ -181,7 +187,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async verifyIdToken(job: Job): Promise<JobResponse> {
+  async verifyIdToken(job: Job): Promise<JobResponse<DecodedIdToken>> {
     try {
       const idToken = job.payload.idToken;
       const checkRevoked = job.payload.checkRevoked || false;
@@ -200,7 +206,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async revokeRefreshTokens(job: Job): Promise<JobResponse> {
+  async revokeRefreshTokens(job: Job): Promise<JobResponse<void>> {
     try {
       const uid = job.payload.uid;
       const response = await this.firebaseAdmin.auth().revokeRefreshTokens(uid);
@@ -216,7 +222,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async generateEmailVerificationLink(job: Job): Promise<JobResponse> {
+  async generateEmailVerificationLink(job: Job): Promise<JobResponse<string>> {
     try {
       const url = job.payload.url;
       const email = job.payload.email;
@@ -238,7 +244,7 @@ export class FireAuthService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async generatePasswordResetLink(job: Job): Promise<JobResponse> {
+  async generatePasswordResetLink(job: Job): Promise<JobResponse<string>> {
     try {
       const url = job.payload.url;
       const email = job.payload.email;

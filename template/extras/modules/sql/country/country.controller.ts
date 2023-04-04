@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  Req,
   Res,
 } from '@nestjs/common';
 import {
@@ -19,12 +18,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
+  ApiQueryCountAll,
   ApiQueryDelete,
   ApiQueryGetAll,
   ApiQueryGetById,
   ApiQueryGetOne,
+  ResponseCountAll,
   ResponseCreated,
   ResponseDeleted,
   ResponseGetAll,
@@ -42,29 +43,31 @@ import {
   NotFound,
   Result,
 } from 'src/core/core.responses';
+import { pluralizeString, snakeCase } from 'src/core/core.utils';
 import { Owner, OwnerDto } from 'src/core/decorators/sql/owner.decorator';
 import { CountryService } from './country.service';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
 import { Country } from './entities/country.entity';
 
-@ApiTags('country')
+const entity = snakeCase(Country.name);
+
+@ApiTags(entity)
 @ApiBearerAuth()
 @ApiForbiddenResponse(ResponseForbidden)
 @ApiInternalServerErrorResponse(ResponseInternalServerError)
 @ApiExtraModels(Country)
-@Controller('country')
+@Controller(entity)
 export class CountryController {
   constructor(private readonly countryService: CountryService) {}
 
   /**
-   * Create a new Country
+   * Create a new entity document
    */
   @Post()
-  @ApiOperation({ summary: 'Create a new country' })
+  @ApiOperation({ summary: `Create new ${entity}` })
   @ResponseCreated(Country)
   async create(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Body() createCountryDto: CreateCountryDto,
@@ -83,17 +86,16 @@ export class CountryController {
         message: `${error.message || error}`,
       });
     }
-    return Created(res, { data: { country: data }, message: 'Created' });
+    return Created(res, { data: { [entity]: data }, message: 'Created' });
   }
 
   /**
-   * Update a Country using id
+   * Update an entity document by using id
    */
   @Put(':id')
-  @ApiOperation({ summary: 'Update a country using id' })
+  @ApiOperation({ summary: `Update ${entity} using id` })
   @ResponseUpdated(Country)
   async update(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
@@ -120,18 +122,17 @@ export class CountryController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { country: data }, message: 'Updated' });
+    return Result(res, { data: { [entity]: data }, message: 'Updated' });
   }
 
   /**
-   * Return all Countries list
+   * Return all entity documents list
    */
   @Get()
-  @ApiOperation({ summary: 'Get all countries' })
+  @ApiOperation({ summary: `Get all ${pluralizeString(entity)}` })
   @ApiQueryGetAll()
   @ResponseGetAll(Country)
   async findAll(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Query() query: any,
@@ -152,20 +153,51 @@ export class CountryController {
       });
     }
     return Result(res, {
-      data: { countries: data, offset, limit, count },
+      data: { [pluralizeString(entity)]: data, offset, limit, count },
       message: 'Ok',
     });
   }
 
   /**
-   * Find one Country
+   * Return count of entity documents
+   */
+  @Get('count')
+  @ApiOperation({ summary: `Get count of ${pluralizeString(entity)}` })
+  @ApiQueryCountAll()
+  @ResponseCountAll()
+  async countAll(
+    @Res() res: Response,
+    @Owner() owner: OwnerDto,
+    @Query() query: any,
+  ) {
+    const { error, count } = await this.countryService.getCount(
+      new SqlJob({
+        owner,
+        action: 'getCount',
+        payload: { ...query },
+      }),
+    );
+
+    if (!!error) {
+      return ErrorResponse(res, {
+        error,
+        message: `${error.message || error}`,
+      });
+    }
+    return Result(res, {
+      data: { count },
+      message: 'Ok',
+    });
+  }
+
+  /**
+   * Find one entity document
    */
   @Get('find')
-  @ApiOperation({ summary: 'Find a country' })
+  @ApiOperation({ summary: `Find one ${entity}` })
   @ApiQueryGetOne()
   @ResponseGetOne(Country)
   async findOne(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Query() query: any,
@@ -190,18 +222,17 @@ export class CountryController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { country: data }, message: 'Ok' });
+    return Result(res, { data: { [entity]: data }, message: 'Ok' });
   }
 
   /**
-   * Get a Country by id
+   * Get an entity document by using id
    */
   @Get(':id')
-  @ApiOperation({ summary: 'Get a country using id' })
+  @ApiOperation({ summary: `Find ${entity} using id` })
   @ApiQueryGetById()
   @ResponseGetOne(Country)
   async findById(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
@@ -228,18 +259,17 @@ export class CountryController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { country: data }, message: 'Ok' });
+    return Result(res, { data: { [entity]: data }, message: 'Ok' });
   }
 
   /**
-   * Delete a Country using id
+   * Delete an entity document by using id
    */
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a country using id' })
+  @ApiOperation({ summary: `Delete ${entity} using id` })
   @ApiQueryDelete()
   @ResponseDeleted(Country)
   async delete(
-    @Req() req: Request,
     @Res() res: Response,
     @Owner() owner: OwnerDto,
     @Param('id') id: number,
@@ -266,6 +296,6 @@ export class CountryController {
         message: `${error.message || error}`,
       });
     }
-    return Result(res, { data: { country: data }, message: 'Deleted' });
+    return Result(res, { data: { [entity]: data }, message: 'Deleted' });
   }
 }

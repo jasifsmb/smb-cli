@@ -1,16 +1,20 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+
+export enum OtpSessionType {
+  Login = 'Login',
+  Signup = 'Signup',
+  Forgot = 'Forgot',
+}
 
 export type OtpSessionDocument = MongoDocument<OtpSession>;
 
 @Schema({
   collection: 'otp_sessions',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class OtpSession extends MongoSchema {
   @Prop({ type: 'Mixed' })
@@ -27,12 +31,13 @@ export class OtpSession extends MongoSchema {
   })
   otp: string;
 
-  @Prop()
+  @Prop({ enum: OtpSessionType })
   @ApiProperty({
     description: 'Type',
-    example: 'Forgot',
+    example: OtpSessionType.Forgot,
+    enum: OtpSessionType,
   })
-  type: 'Forgot' | 'Signup' | 'Login';
+  type: OtpSessionType;
 
   @Prop({
     default: false,
@@ -77,4 +82,4 @@ export class OtpSession extends MongoSchema {
   payload: any;
 }
 
-export const OtpSessionSchema = SchemaFactory.createForClass(OtpSession);
+export const OtpSessionSchema = createMongoSchema(OtpSession);

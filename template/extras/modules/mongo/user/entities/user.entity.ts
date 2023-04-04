@@ -1,46 +1,50 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEmail,
-  IsMongoId,
+  IsEnum,
   IsNumberString,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
-import { SchemaTypes } from 'mongoose';
 import { AuthProvider } from '../../auth/auth-provider.enum';
-import { Role } from '../../role/entities/role.entity';
+import { Role } from '../role.enum';
 
 export type UserDocument = MongoDocument<User>;
 
 @Schema({
   collection: 'users',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+  ...defaultSchemaOptions,
+  toJSON: {
+    virtuals: true,
+    transform(_doc, _ret) {
+      delete _ret._id;
+      delete _ret.__v;
+      delete _ret.deletedAt;
+      delete _ret.deletedBy;
+      delete _ret.password;
+      return _ret;
+    },
   },
-  toJSON: { virtuals: true },
 })
 export class User extends MongoSchema {
-  @ApiProperty({
-    description: 'User ID',
-    example: 1,
-    readOnly: true,
+  @Prop({
+    type: String,
+    enum: Object.values(Role),
+    default: Role.User,
   })
-  id: string;
-
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'Role' })
   @ApiProperty({
+    enum: Role,
     description: 'Role',
-    example: '60f6c774b735412058402be7',
-    anyOf: [{ type: 'string' }, { $ref: getSchemaPath(Role) }],
+    example: Role.User,
   })
-  @IsMongoId()
-  role_id: string | Role;
+  @IsEnum(Role)
+  role: Role;
 
   @Prop({ unique: true })
   @ApiProperty({
@@ -144,7 +148,7 @@ export class User extends MongoSchema {
   @IsNumberString()
   phone: string;
 
-  @Prop()
+  @Prop({ select: false })
   @ApiProperty({
     description: 'Password',
     example: '123456',
@@ -212,4 +216,4 @@ export class User extends MongoSchema {
   })
   last_login_at?: Date;
 }
-export const UserSchema = SchemaFactory.createForClass(User);
+export const UserSchema = createMongoSchema(User);

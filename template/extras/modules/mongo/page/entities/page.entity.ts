@@ -1,6 +1,8 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { IsUnique } from '@core/mongo/mongo.unique-validator';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
 
@@ -8,18 +10,16 @@ export type PageDocument = MongoDocument<Page>;
 
 @Schema({
   collection: 'page',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class Page extends MongoSchema {
-  @Prop({ unique: true })
+  @Prop({ index: true })
   @ApiProperty({
     description: 'Page Name',
     example: 'about_us',
   })
   @IsString()
+  @IsUnique('Page')
   name: string;
 
   @Prop()
@@ -46,4 +46,4 @@ export class Page extends MongoSchema {
   @IsBoolean()
   allow_html: boolean;
 }
-export const PageSchema = SchemaFactory.createForClass(Page);
+export const PageSchema = createMongoSchema(Page);

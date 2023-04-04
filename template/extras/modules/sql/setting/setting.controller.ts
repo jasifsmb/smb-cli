@@ -39,7 +39,7 @@ import { NotFoundError } from 'src/core/core.errors';
 import { ErrorResponse, NotFound, Result } from 'src/core/core.responses';
 import { Owner, OwnerDto } from 'src/core/decorators/sql/owner.decorator';
 import { Roles } from 'src/core/decorators/sql/roles.decorator';
-import { Role } from '../role/role.enum';
+import { Role } from '../user/role.enum';
 import { UpdateBulkSettingDto } from './dto/update-bulk-settings.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { Setting } from './entities/setting.entity';

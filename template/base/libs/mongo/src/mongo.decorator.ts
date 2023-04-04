@@ -1,6 +1,6 @@
-import { PopulateOptions } from 'mongoose';
-import config from 'src/config';
+import { VirtualTypeOptions } from 'mongoose';
 import { MongoJob } from './mongo.job';
+import { convertPopulate, populateSelect } from './mongo.utils';
 
 /**
  * Decorator for converting request job.payload to job.sql
@@ -15,6 +15,7 @@ export const ReadPayload = (
   const original = descriptor.value;
   descriptor.value = function wrapper(job: MongoJob) {
     const payload = job.payload;
+    const options = job.options;
     const select: string[] = payload.select || [];
     const where = payload.where || {};
     if (payload.search && this.searchFields.length) {
@@ -26,10 +27,22 @@ export const ReadPayload = (
       }
       where.$and.push({ $or: whereOR });
     }
-    const attributes = select.map((x) => x.replace(/[^a-zA-Z0-9_]/g, ''));
-    const populate = (job.payload.populate || []).map((x: string) => ({
-      path: x,
-    }));
+
+    // set attributes and populated attributes
+    const { attributes, populateAttributes } = populateSelect(
+      select.map((x: string) => x.replace(/[^a-zA-Z0-9_.]/g, '')),
+    );
+
+    // set up populate with the select attributes
+    const populate = [
+      ...(payload.populate || []),
+      ...populateAttributes.map((x) => x.path),
+    ].filter((x: any, i: any, a: string | any[]) => a.indexOf(x) === i);
+
+    /* add populate to sequelize include option */
+    const include =
+      options.include || convertPopulate(populate || [], populateAttributes);
+
     let sort = job.payload.sort || [];
     if (typeof sort[0] === 'string') {
       sort = [sort];
@@ -38,15 +51,11 @@ export const ReadPayload = (
 
     job.options = {
       where: where || undefined,
-      populate: populate,
+      populate: include,
       sort: sort,
       projection: attributes.length ? attributes.join(' ') : undefined,
       skip: job.payload.offset ? +job.payload.offset : 0,
-      limit: job.payload.limit
-        ? +job.payload.limit === -1
-          ? 1000
-          : +job.payload.limit
-        : config().paginationLimit,
+      limit: job.payload.limit,
       pagination: true,
     };
     return original.apply(this, [job]);
@@ -66,15 +75,28 @@ export const WritePayload = (
   const original = descriptor.value;
   descriptor.value = function wrapper(job: MongoJob) {
     const payload = job.payload;
-    const populate: PopulateOptions[] = (job.payload.populate || []).map(
-      (x: string) => ({
-        path: x,
-      }),
+    const options = job.options;
+    const select = payload.select || [];
+
+    //set attributes and populated attributes
+    const { attributes, populateAttributes } = populateSelect(
+      select.map((x: string) => x.replace(/[^a-zA-Z0-9_.]/g, '')),
     );
+
+    // set up populate with the select attributes
+    const populate = [
+      ...(payload.populate || []),
+      ...populateAttributes.map((x) => x.path),
+    ].filter((x: any, i: any, a: string | any[]) => a.indexOf(x) === i);
+
+    /* add populate to sequelize include option */
+    const include =
+      options.populate || convertPopulate(populate || [], populateAttributes);
 
     job.options = {
       where: payload.where || undefined,
-      populate: populate || undefined,
+      populate: include || undefined,
+      projection: attributes.length ? attributes.join(' ') : undefined,
     };
     return original.apply(this, [job]);
   };
@@ -102,3 +124,106 @@ export const DeletePayload = (
     return original.apply(this, [job]);
   };
 };
+
+/**
+ * Mongo Populate
+ *
+ */
+const POPULATE_KEY = 'POPULATE_KEY';
+
+export interface PopulateWithOption {
+  name: string;
+  options: VirtualTypeOptions;
+}
+
+export function setPopulate(
+  options: VirtualTypeOptions,
+  target: any,
+  propertyKey: string,
+) {
+  Reflect.defineMetadata(POPULATE_KEY, options, target, propertyKey);
+  const populates: string[] = Reflect.getMetadata(POPULATE_KEY, target) || [];
+  populates.push(propertyKey);
+  Reflect.defineMetadata(POPULATE_KEY, populates, target);
+}
+
+export function Populate(options: VirtualTypeOptions) {
+  return function (target: any, propertyKey: string) {
+    setPopulate(options, target, propertyKey);
+  };
+}
+
+export function MongoBelongsTo(
+  ref: string,
+  localField: string,
+  options?: VirtualTypeOptions['options'],
+) {
+  return function (target: any, propertyKey: string) {
+    const _options: VirtualTypeOptions = {
+      ref,
+      localField,
+      foreignField: '_id',
+      justOne: true,
+      options,
+    };
+    setPopulate(_options, target, propertyKey);
+  };
+}
+
+export function MongoHasOne(
+  ref: string,
+  foreignField: string,
+  options?: VirtualTypeOptions['options'],
+) {
+  return function (target: any, propertyKey: string) {
+    const _options: VirtualTypeOptions = {
+      ref,
+      localField: '_id',
+      foreignField,
+      justOne: true,
+      options,
+    };
+    setPopulate(_options, target, propertyKey);
+  };
+}
+
+export function MongoBelongsToMany(
+  ref: string,
+  localField: string,
+  options?: VirtualTypeOptions['options'],
+) {
+  return function (target: any, propertyKey: string) {
+    const _options: VirtualTypeOptions = {
+      ref,
+      localField,
+      foreignField: '_id',
+      options,
+    };
+    setPopulate(_options, target, propertyKey);
+  };
+}
+
+export function MongoHasMany(
+  ref: string,
+  foreignField: string,
+  options?: VirtualTypeOptions['options'],
+) {
+  return function (target: any, propertyKey: string) {
+    const _options: VirtualTypeOptions = {
+      ref,
+      localField: '_id',
+      foreignField,
+      options,
+    };
+    setPopulate(_options, target, propertyKey);
+  };
+}
+
+export function getPopulates(model: any): PopulateWithOption[] {
+  const populates: string[] =
+    Reflect.getMetadata(POPULATE_KEY, new model()) || [];
+  return populates.map((prop) => ({
+    name: prop,
+    options: Reflect.getMetadata(POPULATE_KEY, new model(), prop),
+  }));
+}

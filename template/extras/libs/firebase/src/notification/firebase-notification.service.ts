@@ -1,4 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  BatchResponse,
+  MessagingTopicManagementResponse,
+} from 'firebase-admin/lib/messaging/messaging-api';
 import { Job, JobResponse } from 'src/core/core.job';
 import { FirebaseAdminSDK, FIREBASE_ADMIN_INJECT } from '../admin';
 
@@ -14,7 +18,9 @@ export class FirebaseNotificationService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async subscribeTopic(job: Job): Promise<JobResponse> {
+  async subscribeTopic(
+    job: Job,
+  ): Promise<JobResponse<MessagingTopicManagementResponse>> {
     let error = false,
       data = null;
     try {
@@ -33,7 +39,9 @@ export class FirebaseNotificationService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async unSubscribeTopic(job: Job): Promise<JobResponse> {
+  async unSubscribeTopic(
+    job: Job,
+  ): Promise<JobResponse<MessagingTopicManagementResponse>> {
     let error = false,
       data = null;
     try {
@@ -52,7 +60,7 @@ export class FirebaseNotificationService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async send(job: Job): Promise<JobResponse> {
+  async send(job: Job): Promise<JobResponse<string>> {
     let error = false,
       data = null;
     try {
@@ -69,7 +77,7 @@ export class FirebaseNotificationService {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} { error, data }
    */
-  async sendMulticast(job: Job): Promise<JobResponse> {
+  async sendMulticast(job: Job): Promise<JobResponse<BatchResponse>> {
     let error = false,
       data = null;
     try {

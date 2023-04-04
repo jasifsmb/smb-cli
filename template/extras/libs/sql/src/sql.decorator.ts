@@ -1,8 +1,7 @@
 import { isObject, isString } from 'class-validator';
-import { Op } from 'sequelize';
-import config from 'src/config';
-import { convertPopulate, convertWhere } from './sql.utils';
+import { FindAttributeOptions, Op } from 'sequelize';
 import { SqlJob } from './sql.job';
+import { convertPopulate, convertWhere, populateSelect } from './sql.utils';
 
 /**
  * Decorator for converting request job.payload to job.sql
@@ -20,9 +19,22 @@ export const ReadPayload = (
     const options = job.options;
     const select = payload.select || [];
     const where = convertWhere(payload.where || {});
-    const attributes = select.map((x) => x.replace(/[^a-zA-Z0-9_]/g, ''));
+
+    // set attributes and populated attributes
+    const { attributes, populateAttributes } = populateSelect(
+      select.map((x: string) => x.replace(/[^a-zA-Z0-9_.]/g, '')),
+    );
+
+    // set up populate with the select attributes
+    const populate = [
+      ...(payload.populate || []),
+      ...populateAttributes.map((x) => x.association),
+    ].filter((x: any, i: any, a: string | any[]) => a.indexOf(x) === i);
+
     /* add populate to sequelize include option */
-    const include = options.include || convertPopulate(payload.populate || []);
+    const include =
+      options.include || convertPopulate(populate || [], populateAttributes);
+
     /* Search from searchFields, if payload.search key is set */
     where[Op.and] = where[Op.and] || [];
     if (payload.search && this.searchFields.length) {
@@ -54,11 +66,7 @@ export const ReadPayload = (
       include: include || undefined,
       attributes: attributes.length ? attributes : undefined,
       offset: job.payload.offset ? +job.payload.offset : 0,
-      limit: job.payload.limit
-        ? +job.payload.limit === -1
-          ? 1000
-          : +job.payload.limit
-        : config().paginationLimit,
+      limit: job.payload.limit,
       order: job.payload.order || undefined,
       having: job.payload.having || undefined,
       raw: job.payload.raw || undefined,
@@ -83,12 +91,27 @@ export const WritePayload = (
   descriptor.value = function wrapper(job: SqlJob) {
     const payload = job.payload;
     const options = job.options;
+    const select = payload.select || [];
+
+    // set attributes and populated attributes
+    const { attributes, populateAttributes } = populateSelect(
+      select.map((x: string) => x.replace(/[^a-zA-Z0-9_.]/g, '')),
+    );
+
+    // set up populate with the select attributes
+    const populate = [
+      ...(payload.populate || []),
+      ...populateAttributes.map((x) => x.association),
+    ].filter((x: any, i: any, a: string | any[]) => a.indexOf(x) === i);
+
     /* add populate to sequelize include option */
-    const include = options.include || convertPopulate(payload.populate || []);
+    const include =
+      options.include || convertPopulate(populate, populateAttributes);
 
     job.options = {
       where: payload.where || undefined,
       include: include || undefined,
+      attributes: attributes.length ? attributes : undefined,
     };
     return original.apply(this, [job]);
   };
@@ -116,3 +139,18 @@ export const DeletePayload = (
     return original.apply(this, [job]);
   };
 };
+
+const INCLUDE_ATTR_KEY = 'INCLUDE_ATTRIBUTES';
+
+export function IncludeAttributes(attributes: FindAttributeOptions) {
+  return function (target: any, propertyKey: string) {
+    Reflect.defineMetadata(INCLUDE_ATTR_KEY, attributes, target, propertyKey);
+  };
+}
+
+export function getIncludeAttributes(
+  model: any,
+  propertyKey: string,
+): FindAttributeOptions {
+  return Reflect.getMetadata(INCLUDE_ATTR_KEY, new model(), propertyKey);
+}

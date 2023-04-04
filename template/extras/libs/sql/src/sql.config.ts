@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { registerAs } from '@nestjs/config';
 import { SequelizeModuleOptions } from '@nestjs/sequelize';
 
-import { isPrimaryInstance } from '../../../src/core/core.utils';
+import { isPrimaryInstance } from 'src/core/core.utils';
 
 const logger: Logger = new Logger('SqlQueryLog');
 

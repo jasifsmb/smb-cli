@@ -36,7 +36,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeRead(job: SqlJob): Promise<void> {}
+  async doBeforeRead(job: SqlJob<M>): Promise<void> {}
 
   /**
    * doBeforeReadAll
@@ -44,7 +44,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeReadAll(job: SqlJob): Promise<void> {}
+  async doBeforeReadAll(job: SqlJob<M>): Promise<void> {}
 
   /**
    * doBeforeCount
@@ -52,7 +52,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeCount(job: SqlJob): Promise<void> {}
+  async doBeforeCount(job: SqlJob<M>): Promise<void> {}
 
   /**
    * doBeforeCreate
@@ -60,7 +60,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeCreate(job: SqlJob): Promise<void> {}
+  async doBeforeCreate(job: SqlJob<M>): Promise<void> {}
 
   /**
    * doBeforeUpdate
@@ -68,7 +68,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeUpdate(job: SqlJob): Promise<void> {}
+  async doBeforeUpdate(job: SqlJob<M>): Promise<void> {}
 
   /**
    * doBeforeDelete
@@ -76,7 +76,7 @@ export class ModelService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {void}
    */
-  async doBeforeDelete(job: SqlJob): Promise<void> {}
+  async doBeforeDelete(job: SqlJob<M>): Promise<void> {}
 
   /**
    * findAll
@@ -85,7 +85,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async findAll(job: SqlJob): Promise<SqlGetAllResponse<M>> {
+  async findAll(job: SqlJob<M>): Promise<SqlGetAllResponse<M>> {
     try {
       await this.doBeforeReadAll(job);
       if (job.error) throw job.error;
@@ -105,7 +105,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async getCount(job: SqlJob): Promise<SqlCountResponse> {
+  async getCount(job: SqlJob<M>): Promise<SqlCountResponse> {
     try {
       await this.doBeforeCount(job);
       if (job.error) throw job.error;
@@ -124,7 +124,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async findById(job: SqlJob): Promise<SqlGetOneResponse<M>> {
+  async findById(job: SqlJob<M>): Promise<SqlGetOneResponse<M>> {
     try {
       await this.doBeforeRead(job);
       if (job.error) throw job.error;
@@ -144,7 +144,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @ReadPayload
-  async findOne(job: SqlJob): Promise<SqlGetOneResponse<M>> {
+  async findOne(job: SqlJob<M>): Promise<SqlGetOneResponse<M>> {
     try {
       await this.doBeforeRead(job);
       if (job.error) throw job.error;
@@ -164,7 +164,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @WritePayload
-  async create(job: SqlJob): Promise<SqlCreateResponse<M>> {
+  async create(job: SqlJob<M>): Promise<SqlCreateResponse<M>> {
     try {
       await this.doBeforeCreate(job);
       if (job.error) throw job.error;
@@ -184,7 +184,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @WritePayload
-  async update(job: SqlJob): Promise<SqlUpdateResponse<M>> {
+  async update(job: SqlJob<M>): Promise<SqlUpdateResponse<M>> {
     try {
       await this.doBeforeUpdate(job);
       if (job.error) throw job.error;
@@ -204,7 +204,7 @@ export class ModelService<M> {
    * @return {object} job response object
    */
   @DeletePayload
-  async delete(job: SqlJob): Promise<SqlDeleteResponse<M>> {
+  async delete(job: SqlJob<M>): Promise<SqlDeleteResponse<M>> {
     try {
       await this.doBeforeDelete(job);
       if (job.error) throw job.error;

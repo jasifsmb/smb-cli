@@ -4,9 +4,10 @@ import {
   ModelDefinition,
   MongooseModule,
 } from '@nestjs/mongoose';
-import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './database';
 import { MongoService } from './mongo.service';
-import { SeederModule } from './seeder/seeder.module';
+import { MongoUniqueValidator } from './mongo.unique-validator';
+import { SeederModule } from './seeder/';
 
 export interface MongoModuleOption {
   seeder?: boolean;
@@ -33,17 +34,17 @@ export class MongoModule {
   }
 
   static register(
-    option: ModelDefinition,
+    model: ModelDefinition,
     options?: MongoOption,
     connectionName?: string,
   ): DynamicModule {
     return {
       module: DatabaseModule,
-      imports: [MongooseModule.forFeature([option], connectionName)],
+      imports: [MongooseModule.forFeature([model], connectionName)],
       providers: [
         {
           provide: 'MODEL_NAME',
-          useValue: option.name,
+          useValue: model.name,
         },
         {
           provide: 'MODEL_OPTIONS',
@@ -56,23 +57,24 @@ export class MongoModule {
   }
 
   static registerAsync(
-    option: AsyncModelFactory,
+    modelFactory: AsyncModelFactory,
     options?: MongoOption,
     connectionName?: string,
   ): DynamicModule {
     return {
       module: DatabaseModule,
-      imports: [MongooseModule.forFeatureAsync([option], connectionName)],
+      imports: [MongooseModule.forFeatureAsync([modelFactory], connectionName)],
       providers: [
         {
           provide: 'MODEL_NAME',
-          useValue: option.name,
+          useValue: modelFactory.name,
         },
         {
           provide: 'MODEL_OPTIONS',
           useValue: options || {},
         },
         MongoService,
+        MongoUniqueValidator,
       ],
       exports: [MongoService],
     };

@@ -34,7 +34,7 @@ import { NotFoundError } from 'src/core/core.errors';
 import { ErrorResponse, NotFound, Result } from 'src/core/core.responses';
 import { Owner, OwnerDto } from 'src/core/decorators/mongo/owner.decorator';
 import { Roles } from 'src/core/decorators/mongo/roles.decorator';
-import { Role } from '../role/role.enum';
+import { Role } from '../user/role.enum';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { Template } from './entities/template.entity';
 import { TemplateService } from './template.service';

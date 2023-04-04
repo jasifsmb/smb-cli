@@ -1,18 +1,53 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
-import { SchemaTypes } from 'mongoose';
-import { AppEngine, defaultEngine } from '../../../src/app.config';
+import { FilterQuery, SchemaOptions, SchemaTypes, Types } from 'mongoose';
+import { AppEngine, defaultEngine } from 'src/app.config';
 
-@Schema()
+export interface DeleteOptions {
+  force?: boolean;
+  deletedBy?: number | Types.ObjectId;
+}
+
+export interface RestoreOptions {
+  restoredBy?: number | Types.ObjectId;
+}
+
+export interface DefaultSchemaMethods {
+  delete(options?: DeleteOptions): Promise<this>;
+  restore(options?: RestoreOptions): Promise<this>;
+}
+
+export interface DefaultSchemaStaticMethods<T> {
+  bulkDelete(filter?: FilterQuery<T>, options?: DeleteOptions): Promise<any>;
+}
+
+export const defaultSchemaOptions: SchemaOptions = {
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+  },
+  toJSON: {
+    virtuals: true,
+    transform(_doc, _ret) {
+      delete _ret._id;
+      delete _ret.__v;
+      delete _ret.deletedAt;
+      delete _ret.deletedBy;
+      return _ret;
+    },
+  },
+};
+
 export class MongoSchema {
+  _id: Types.ObjectId;
+
   @ApiProperty({
-    description: 'ID',
-    example: '606d990740d3ba3480dae119',
+    description: 'ID as String',
     readOnly: true,
   })
-  _id: string;
+  id: string;
 
   @Prop({
     default: true,
@@ -63,9 +98,19 @@ export class MongoSchema {
     example: '606d990740d3ba3480dae119',
     readOnly: true,
   })
-  updated_by: number | string;
+  updated_by: number | Types.ObjectId;
 
-  deletedAt: Date;
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  deleted: boolean;
 
-  deletedBy: number | string;
+  @Prop()
+  deleted_at: Date;
+
+  @Prop({
+    type: defaultEngine === AppEngine.Mongo ? SchemaTypes.ObjectId : Number,
+  })
+  deleted_by: number | Types.ObjectId;
 }

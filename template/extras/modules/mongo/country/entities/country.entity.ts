@@ -1,17 +1,17 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { MongoHasMany } from '@core/mongo/mongo.decorator';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
+import { State } from '../../state/entities/state.entity';
 
 export type CountryDocument = MongoDocument<Country>;
 
 @Schema({
   collection: 'country',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class Country extends MongoSchema {
   @Prop()
@@ -29,5 +29,15 @@ export class Country extends MongoSchema {
   })
   @IsString()
   code: string;
+
+  @MongoHasMany('State', 'country_id')
+  @ApiProperty({
+    description: 'States',
+    type: 'array',
+    items: {
+      $ref: getSchemaPath(State),
+    },
+  })
+  states: State[];
 }
-export const CountrySchema = SchemaFactory.createForClass(Country);
+export const CountrySchema = createMongoSchema(Country);

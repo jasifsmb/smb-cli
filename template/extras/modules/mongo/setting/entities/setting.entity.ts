@@ -1,5 +1,6 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -36,10 +37,7 @@ export const OptionsSchema = SchemaFactory.createForClass(Options);
 
 @Schema({
   collection: 'settings',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class Setting extends MongoSchema {
   @Prop({ unique: 'name' })
@@ -100,4 +98,4 @@ export class Setting extends MongoSchema {
   options: Options[];
 }
 
-export const SettingSchema = SchemaFactory.createForClass(Setting);
+export const SettingSchema = createMongoSchema(Setting);

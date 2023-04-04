@@ -1,3 +1,4 @@
+import { IncludeAttributes } from '@core/sql/sql.decorator';
 import { SqlModel } from '@core/sql/sql.model';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsPositive, IsString } from 'class-validator';
@@ -40,6 +41,7 @@ export class State extends SqlModel {
   @IsString()
   code: string;
 
+  @IncludeAttributes(['id', 'name'])
   @BelongsTo(() => Country)
   country: Country;
 }

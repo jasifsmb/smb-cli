@@ -47,7 +47,7 @@ import {
 import { Owner, OwnerDto } from 'src/core/decorators/mongo/owner.decorator';
 import { Roles } from 'src/core/decorators/mongo/roles.decorator';
 import { Public } from 'src/core/decorators/public.decorator';
-import { Role } from '../role/role.enum';
+import { Role } from '../user/role.enum';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { Page } from './entities/page.entity';

@@ -13,15 +13,15 @@ import { UserService } from './user.service';
       imports: [],
       useFactory: () => {
         const schema = UserSchema;
-        schema.pre<User>('save', async function (next) {
-          if (this.password) {
-            this.password = await generateHash(this.password);
+        schema.pre('save', async function (next) {
+          if (this.isNew) {
+            this.uid = uuid();
+            if (this.password) {
+              this.password = await generateHash(this.password);
+            }
           }
           if (this.first_name && this.last_name) {
             this.name = `${this.first_name} ${this.last_name}`;
-          }
-          if (!this.uid) {
-            this.uid = uuid();
           }
           next();
         });

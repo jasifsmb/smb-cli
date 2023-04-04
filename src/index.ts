@@ -1,67 +1,88 @@
 #!/usr/bin/env node
-
-import fs from 'fs-extra';
-import path from 'path';
-import { PackageJson } from 'type-fest';
-import { runCli } from './cli.js';
-import { createProject } from './helpers/createProject.js';
-import { initializeGit } from './helpers/git.js';
-import { installDependencies } from './helpers/installDependencies.js';
-import { logNextSteps } from './helpers/logNextSteps.js';
-import { buildPkgInstallerMap } from './installers/index.js';
+import { Command } from 'commander';
+import { addCommand } from './actions/add.js';
+import { moduleCommand } from './actions/module.js';
+import { newCommand } from './actions/new.js';
+import { SMB_NEST_CLI } from './consts.js';
+import { availablePackages } from './installers/index.js';
 import { getVersion } from './utils/getCliVersion.js';
 import { logger } from './utils/logger.js';
-import { parseNameAndPath } from './utils/parseNameAndPath.js';
 import { renderTitle } from './utils/renderTitle.js';
 
-type SNCPackageJSON = PackageJson & {
-  sncMetadata?: {
-    initVersion: string;
-  };
-};
+renderTitle();
 
-const main = async () => {
-  renderTitle();
-  const {
-    appName,
-    packages,
-    flags: { noGit, noInstall, importAlias },
-  } = await runCli();
+const program = new Command();
+program
+  .name(SMB_NEST_CLI)
+  .description('A CLI for creating and managing SMB Nest Core App')
+  .version(getVersion(), '-v, --version', 'Display the version number');
 
-  const usePackages = buildPkgInstallerMap(packages);
-  const [scopedAppName, appDir] = parseNameAndPath(appName);
-
-  const projectDir = await createProject({
-    projectName: appDir,
-    packages: usePackages,
-    importAlias: importAlias,
-    noInstall,
+program
+  .command('new')
+  .description('Command for creating a new project')
+  .alias('n')
+  .argument(
+    '[dir]',
+    'The name of the application, as well as the name of the directory to create',
+  )
+  .option(
+    '--noGit',
+    'Explicitly tell the CLI to not initialize a new git repo in the project',
+    false,
+  )
+  .option(
+    '--noInstall',
+    "Explicitly tell the CLI to not run the package manager's install command",
+    false,
+  )
+  .action((arg, options) => {
+    newCommand(arg, options).catch(handleError);
   });
 
-  const pkgJson = fs.readJSONSync(
-    path.join(projectDir, 'package.json'),
-  ) as SNCPackageJSON;
-  pkgJson.name = scopedAppName;
-  pkgJson.sncMetadata = { initVersion: getVersion() };
-  fs.writeJSONSync(path.join(projectDir, 'package.json'), pkgJson, {
-    spaces: 2,
+program
+  .command('add')
+  .description('Command for add a third party module to the application')
+  .alias('a')
+  .argument('<module-name>', 'Name of the third party module')
+  .option(
+    '--noInstall',
+    "Explicitly tell the CLI to not run the package manager's install command",
+    false,
+  )
+  .addHelpText(
+    'before',
+    `Supported modules: ${availablePackages
+      .filter((pkg) => pkg !== 'sql')
+      .join(', ')}`,
+  )
+  .action((arg, options) => {
+    addCommand(arg, options).catch(handleError);
   });
 
-  if (!noInstall) {
-    await installDependencies({ projectDir });
-  }
+program
+  .command('module')
+  .argument(
+    '<name>',
+    'Name of the module to be created. (Hyphen seperated lowercase words)',
+  )
+  .alias('m')
+  .option('--noSpec', 'Explicitly tell the CLI to not add test files.', false)
+  .option(
+    '--useSql',
+    'Explicitly tell the CLI to use the default engine as sql.',
+  )
+  .option(
+    '--useMongo',
+    'Explicitly tell the CLI to use the default engine as mongo.',
+  )
+  .description('Generate a new module')
+  .addHelpText('before', 'Eg: payment, order-checkout')
+  .action((arg, options) => {
+    moduleCommand(arg, options).catch(handleError);
+  });
 
-  if (!noGit) {
-    await initializeGit(projectDir);
-  }
-
-  logNextSteps({ projectName: appDir, packages: usePackages, noInstall });
-
-  process.exit(0);
-};
-
-main().catch((err) => {
-  logger.error('Aborting installation...');
+function handleError(err: any) {
+  logger.error('Aborting...');
   if (err instanceof Error) {
     logger.error(err);
   } else {
@@ -71,4 +92,6 @@ main().catch((err) => {
     console.log(err);
   }
   process.exit(1);
-});
+}
+
+program.parse();

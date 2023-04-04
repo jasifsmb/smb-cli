@@ -1,6 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { isPrimaryInstance } from '../../../../src/core/core.utils';
-import { DatabaseModule } from '../database/database.module';
+import { isPrimaryInstance } from 'src/core/core.utils';
+import { DatabaseModule } from '../database';
 import { SeederService } from './seeder.service';
 
 @Module({

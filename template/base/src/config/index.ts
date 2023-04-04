@@ -9,15 +9,22 @@ export enum CDNStorage {
   Azure,
 }
 
+export enum Environment {
+  Development = 'development',
+  Test = 'test',
+  Staging = 'staging',
+  Production = 'production',
+}
+
 export default () => ({
   /**
-   * @property {string} env - environment
+   * @property {Environment} env - environment
    * - development
    * - test
    * - production
    * @default development
    */
-  env: process.env.NODE_ENV || 'development',
+  env: process.env.NODE_ENV || Environment.Development,
   /**
    * @property {number} port
    * @default 3000
@@ -31,6 +38,10 @@ export default () => ({
    * @property {string} appId - app unique id
    */
   appId: process.env.npm_package_name,
+  /**
+   * @property {string} appVersion - app version
+   */
+  appVersion: '1.0',
   /**
    * @property {string} baseURL - app base url or domain
    * @default http://localhost:{port}/

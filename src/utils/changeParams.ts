@@ -39,6 +39,11 @@ export const getAppModuleChangeParams = (): AppModuleUtils => {
       namedImports: ['FirebaseModule'],
       importElement: 'FirebaseModule',
     },
+    stripe: {
+      moduleSpecifier: '@core/stripe',
+      namedImports: ['StripeModule'],
+      importElement: 'StripeModule',
+    },
   };
 };
 
@@ -52,10 +57,6 @@ export const getMongoEngineChangeParams = () => ({
       {
         name: 'LocalAuthModule',
         path: './mongo/auth/strategies/local/local-auth.module',
-      },
-      {
-        name: 'RoleModule',
-        path: './mongo/role/role.module',
       },
       {
         name: 'UserModule',
@@ -89,6 +90,12 @@ export const getMongoEngineChangeParams = () => ({
         class: 'RolesGuard',
         classPath: './mongo/auth/roles.guard',
       },
+      {
+        provide: 'APP_INTERCEPTOR',
+        providerPath: '@nestjs/core',
+        class: 'SettingsInterceptor',
+        classPath: 'src/core/interceptors/mongo/settings.interceptors',
+      },
     ],
     socketAdapter: [
       {
@@ -113,7 +120,6 @@ export const getSQLEngineChangeParams = () => ({
         name: 'NotificationModule',
         path: './sql/notification/notification.module',
       },
-      { name: 'RoleModule', path: './sql/role/role.module' },
       { name: 'SettingModule', path: './sql/setting/setting.module' },
       { name: 'StateModule', path: './sql/state/state.module' },
       { name: 'TemplateModule', path: './sql/template/template.module' },
@@ -129,6 +135,12 @@ export const getSQLEngineChangeParams = () => ({
         provide: 'APP_GUARD',
         class: 'RolesGuard',
         classPath: './sql/auth/roles.guard',
+      },
+      {
+        provide: 'APP_INTERCEPTOR',
+        providerPath: '@nestjs/core',
+        class: 'SettingsInterceptor',
+        classPath: 'src/core/interceptors/sql/settings.interceptors',
       },
     ],
     socketAdapter: [

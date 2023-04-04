@@ -1,9 +1,8 @@
-import { SchemaTypes } from 'mongoose';
-import softDelete from './plugins/soft-delete';
+import { Connection } from 'mongoose';
+import * as paginate from 'mongoose-paginate-v2';
 
 import { registerAs } from '@nestjs/config';
 import { MongooseModuleOptions } from '@nestjs/mongoose';
-import { AppEngine, defaultEngine } from '../../../src/app.config';
 
 export default registerAs(
   'mongo',
@@ -11,17 +10,8 @@ export default registerAs(
     uri: process.env.MONGO_URI || 'mongodb://localhost/nest',
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    connectionFactory: (connection) => {
-      connection.plugin(softDelete, {
-        deletedAt: 'deleted_at',
-        deletedBy: {
-          name: 'deleted_by',
-          type:
-            defaultEngine === AppEngine.Mongo ? SchemaTypes.ObjectId : Number,
-        },
-        overrideMethods: 'all',
-        indexFields: ['deleted'],
-      });
+    connectionFactory: (connection: Connection) => {
+      connection.plugin(paginate);
       return connection;
     },
   }),

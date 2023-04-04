@@ -1,5 +1,5 @@
-import { QueryOptions } from 'mongoose';
-import { Job, JobResponse } from '../../../src/core/core.job';
+import { AggregateOptions, PipelineStage, QueryOptions, Types } from 'mongoose';
+import { Job, JobResponse } from 'src/core/core.job';
 import { ModelWrap } from './mongo.service';
 
 export interface MongoOptions extends QueryOptions {
@@ -27,6 +27,22 @@ export interface MongoOptions extends QueryOptions {
    * @default false
    */
   hardDelete?: boolean;
+  /**
+   * Sub-documents (array) field name
+   */
+  subDocumentField?: string;
+  /**
+   * Sub-document id
+   */
+  subDocumentId?: string | Types.ObjectId;
+  /**
+   * Aggregate pipelines
+   */
+  aggregate?: PipelineStage[];
+  /**
+   * Aggregate options
+   */
+  aggregateOptions?: AggregateOptions;
   /**
    * Other mongoose options
    */
@@ -101,7 +117,7 @@ export interface MongoCreateBulkResponse<T> extends JobResponse {
   data?: ModelWrap<T>[];
 }
 
-export interface MongoJob extends Job {
+export interface MongoJob<T = any> extends Job {
   /**
    * primary key name of the model
    */
@@ -113,7 +129,7 @@ export interface MongoJob extends Job {
   /**
    * body object used for create or update
    */
-  body?: {
+  body?: Partial<T> & {
     [key: string]: any;
   };
   /**
@@ -128,8 +144,8 @@ export interface MongoJob extends Job {
   options?: MongoOptions;
 }
 
-export class MongoJob extends Job {
-  constructor(job: MongoJob) {
+export class MongoJob<T = any> extends Job {
+  constructor(job: MongoJob<T>) {
     super(job);
     this.pk = job.pk || '_id';
     this.id = job.id || null;

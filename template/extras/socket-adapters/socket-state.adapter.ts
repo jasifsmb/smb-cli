@@ -69,7 +69,7 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
           return next(validateError);
         }
         socket.auth = { ...data.toJSON(), ...session };
-        socket.join(`ROLE_${data.getDataValue('role_id')}`);
+        socket.join(`ROLE_${data.getDataValue('role')}`);
         return next();
       } catch (e) {
         return next(e);

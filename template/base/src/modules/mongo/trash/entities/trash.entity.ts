@@ -1,16 +1,15 @@
 import { MongoDocument } from '@core/mongo';
-import { MongoSchema } from '@core/mongo/mongo.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { createMongoSchema } from '@core/mongo/mongo.utils';
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export type TrashDocument = MongoDocument<Trash>;
 
 @Schema({
   collection: 'trashes',
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-  },
+  ...defaultSchemaOptions,
 })
 export class Trash extends MongoSchema {
   @Prop()
@@ -20,12 +19,12 @@ export class Trash extends MongoSchema {
   })
   entity: string;
 
-  @Prop()
+  @Prop({ type: 'Mixed' })
   @ApiProperty({
     description: 'Entity ID',
     example: 1,
   })
-  entity_id: number;
+  entity_id: number | Types.ObjectId;
 
   @Prop()
   @ApiProperty({
@@ -50,4 +49,4 @@ export class Trash extends MongoSchema {
   expire_in: Date;
 }
 
-export const TrashSchema = SchemaFactory.createForClass(Trash);
+export const TrashSchema = createMongoSchema(Trash);

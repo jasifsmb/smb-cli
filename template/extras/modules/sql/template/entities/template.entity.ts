@@ -1,16 +1,19 @@
 import { SqlModel } from '@core/sql/sql.model';
+import { IsUnique } from '@core/sql/sql.unique-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
-import { Column, DataType, Table } from 'sequelize-typescript';
+import { Column, DataType, Index, Table } from 'sequelize-typescript';
 
 @Table
 export class Template extends SqlModel {
-  @Column({ unique: 'name' })
+  @Column
+  @Index('name')
   @ApiProperty({
     description: 'Template Name',
     example: 'new_account',
   })
   @IsString()
+  @IsUnique('Template')
   name: string;
 
   @Column

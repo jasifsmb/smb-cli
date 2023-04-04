@@ -13,7 +13,6 @@ interface CreateProjectOptions {
   projectName: string;
   packages: PkgInstallerMap;
   noInstall: boolean;
-  importAlias: string;
 }
 
 export const createProject = async ({
@@ -24,7 +23,7 @@ export const createProject = async ({
   const pkgManager = getUserPkgManager();
   const projectDir = path.resolve(process.cwd(), projectName);
 
-  // Bootstraps the base Next.js application
+  // Bootstraps the base Nest.js application
   await scaffoldProject({
     projectName,
     projectDir,
@@ -48,7 +47,6 @@ export const createProject = async ({
 
   copyLibModules(packages, projectDir);
   resolveModulePaths(packages, projectDir);
-
   updateAppModule({ projectName, packages });
 
   return projectDir;
