@@ -78,6 +78,15 @@ export class SqlModel extends Model {
   @DeletedAt
   deleted_at: Date;
 
+  @Column
+  @ApiProperty({
+    format: 'int32',
+    description: 'Deleted By',
+    example: 1,
+    readOnly: true,
+  })
+  deleted_by: number;
+
   /**
    * Fix total count while calling findAndCountAll with include
    */

@@ -51,7 +51,11 @@ export class MongoService<M> {
    */
   async createRecord(job: MongoJob<M>): Promise<MongoCreateResponse<M>> {
     try {
-      const { body = {}, owner, options } = job;
+      const { body, owner, options } = job;
+      if (typeof body === 'undefined')
+        return {
+          error: 'Error calling createRecord - body is missing',
+        };
       let data = new this.model(body);
       if (owner && owner.id) {
         data.set('created_by', owner.id);
@@ -90,7 +94,7 @@ export class MongoService<M> {
     job: MongoJob<M>,
   ): Promise<MongoCreateBulkResponse<M>> {
     try {
-      const { records, owner } = job;
+      const { records, owner, options } = job;
       if (!records.length)
         return {
           error: 'Error calling createBulkRecord - records are missing',
@@ -101,7 +105,7 @@ export class MongoService<M> {
           x.updated_by = owner.id;
         });
       }
-      const data = await this.model.create(records);
+      const data = await this.model.create(records, options);
 
       if (this.options.history) {
         // Create history
@@ -128,6 +132,10 @@ export class MongoService<M> {
     try {
       const { id, body, owner, pk, options } = job;
       if (!id) return { error: 'Error calling updateRecord - id is missing' };
+      if (typeof body === 'undefined')
+        return {
+          error: 'Error calling updateRecord - body is missing',
+        };
       const { where = {}, projection, populate } = options;
       let data = await this.model.findOne(
         {
@@ -177,11 +185,15 @@ export class MongoService<M> {
   async findAndUpdateRecord(job: MongoJob<M>): Promise<MongoUpdateResponse<M>> {
     try {
       const { body, owner, options } = job;
-      const { where = {}, projection } = options;
-      if (!where)
+      if (typeof body === 'undefined')
+        return {
+          error: 'Error calling findAndUpdateRecord - body is missing',
+        };
+      if (typeof options.where === 'undefined')
         return {
           error: 'Error calling findAndUpdateRecord - options.where is missing',
         };
+      const { where = {}, projection } = options;
       const data = await this.model.findOne(where, projection, options);
       if (data === null) throw new NotFoundError('Record not found');
       const previousData = JSON.parse(JSON.stringify(data));
@@ -216,9 +228,19 @@ export class MongoService<M> {
    * @param {object} job - mandatory - a job object representing the job information
    * @return {object} job response object
    */
-  async updateBulkRecords(job: MongoJob<M>): Promise<MongoResponse> {
+  async updateBulkRecords(
+    job: MongoJob<M & MongoSchema>,
+  ): Promise<MongoResponse> {
     try {
       const { body, owner, options } = job;
+      if (typeof body === 'undefined')
+        return {
+          error: 'Error calling updateBulkRecords - body is missing',
+        };
+      if (typeof options.where === 'undefined')
+        return {
+          error: 'Error calling updateBulkRecords - options.where is missing',
+        };
       if (owner && owner.id) {
         body.updated_by = owner.id;
       }
@@ -329,6 +351,10 @@ export class MongoService<M> {
   async findOneRecord(job: MongoJob<M>): Promise<MongoGetOneResponse<M>> {
     try {
       const { options } = job;
+      if (typeof options.where === 'undefined')
+        return {
+          error: 'Error calling findOneRecord - options.where is missing',
+        };
       const { where = {}, projection, allowEmpty } = options;
       const data = await this.model.findOne(where, projection, options);
       if (data === null && !allowEmpty)
@@ -437,11 +463,15 @@ export class MongoService<M> {
   async findOrCreate(job: MongoJob<M>): Promise<MongoCreateResponse<M>> {
     try {
       const { body, options, owner } = job;
-      const { where = {}, projection } = options;
-      if (!where)
+      if (typeof body === 'undefined')
+        return {
+          error: 'Error calling findOrCreate - body is missing',
+        };
+      if (typeof options.where === 'undefined')
         return {
           error: 'Error calling findOrCreate - options.where is missing',
         };
+      const { where = {}, projection } = options;
       let data = await this.model.findOne(where, projection, options);
       let created = false;
       if (data === null) {
@@ -479,11 +509,15 @@ export class MongoService<M> {
   async createOrUpdate(job: MongoJob<M>): Promise<MongoCreateResponse<M>> {
     try {
       const { body, options, owner } = job;
-      const { where = {}, projection } = options;
-      if (!where)
+      if (typeof body === 'undefined')
+        return {
+          error: 'Error calling createOrUpdate - body is missing',
+        };
+      if (typeof options.where === 'undefined')
         return {
           error: 'Error calling createOrUpdate - options.where is missing',
         };
+      const { where = {}, projection } = options;
       let created = false;
       let data = await this.model.findOne(where, projection, options);
       if (data !== null) {
@@ -583,11 +617,11 @@ export class MongoService<M> {
   async findAndDeleteRecord(job: MongoJob<M>): Promise<MongoDeleteResponse<M>> {
     try {
       const { options, owner } = job;
-      const { where = {}, hardDelete = false } = options;
-      if (!where)
+      if (typeof options.where === 'undefined')
         return {
           error: 'Error calling findAndDeleteRecord - options.where is missing',
         };
+      const { where = {}, hardDelete = false } = options;
       const data = await this.model.findOne(where, null, {
         ...options,
         withDeleted: hardDelete,
@@ -620,6 +654,10 @@ export class MongoService<M> {
   async deleteBulkRecords(job: MongoJob<M>): Promise<MongoResponse> {
     try {
       const { options, owner } = job;
+      if (typeof options.where === 'undefined')
+        return {
+          error: 'Error calling deleteBulkRecords - options.where is missing',
+        };
       const { where = {}, hardDelete = false } = options;
       const data = await this.model.bulkDelete(where, {
         force: hardDelete,

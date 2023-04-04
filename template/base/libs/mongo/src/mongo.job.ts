@@ -1,6 +1,5 @@
 import { AggregateOptions, PipelineStage, QueryOptions, Types } from 'mongoose';
 import { Job, JobResponse } from 'src/core/core.job';
-import { MongoSchema } from './mongo.schema';
 import { ModelWrap } from './mongo.service';
 
 export interface MongoOptions extends QueryOptions {
@@ -130,7 +129,7 @@ export interface MongoJob<T = any> extends Job {
   /**
    * body object used for create or update
    */
-  body?: Partial<T & MongoSchema> & {
+  body?: Partial<T> & {
     [key: string]: any;
   };
   /**

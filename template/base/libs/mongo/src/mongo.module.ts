@@ -6,6 +6,7 @@ import {
 } from '@nestjs/mongoose';
 import { DatabaseModule } from './database';
 import { MongoService } from './mongo.service';
+import { MongoUniqueValidator } from './mongo.unique-validator';
 import { SeederModule } from './seeder/';
 
 export interface MongoModuleOption {
@@ -73,6 +74,7 @@ export class MongoModule {
           useValue: options || {},
         },
         MongoService,
+        MongoUniqueValidator,
       ],
       exports: [MongoService],
     };

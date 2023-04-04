@@ -103,6 +103,17 @@ const updateCommonModule = (modulePath: string, project: Project) => {
   }
 
   for (const param of changeParams.providers) {
+    if (param.providerPath) {
+      const provideImportDeclaration = commonModule.getImportDeclaration(
+        param.provide,
+      );
+      if (!provideImportDeclaration) {
+        commonModule.addImportDeclaration({
+          moduleSpecifier: param.providerPath,
+          namedImports: [param.provide],
+        });
+      }
+    }
     commonModule.addImportDeclaration({
       moduleSpecifier: param.classPath,
       namedImports: [param.class],
@@ -129,7 +140,11 @@ const copyMongoFiles = (projectDir: string) => {
   const decDir = path.join(PKG_ROOT, 'template/extras/decorators/mongo');
   const modDir = path.join(PKG_ROOT, 'template/extras/modules/mongo');
   const seedsDir = path.join(PKG_ROOT, 'template/extras/seeds/mongo');
-
+  const testsDir = path.join(PKG_ROOT, 'template/extras/test/mongo');
+  const interceptorsDir = path.join(
+    PKG_ROOT,
+    'template/extras/interceptors/mongo',
+  );
   const appGatewayTemplate = path.join(
     PKG_ROOT,
     'template/extras/app.gateway.mongo.ts',
@@ -143,6 +158,8 @@ const copyMongoFiles = (projectDir: string) => {
   const sqlModDest = path.join(projectDir, 'src/modules/mongo');
   const appGateway = path.join(projectDir, 'src/app.gateway.ts');
   const seedsDest = path.join(projectDir, 'src/seeds/mongo');
+  const testsDest = path.join(projectDir, 'test/mongo');
+  const interceptorsDest = path.join(projectDir, 'src/interceptors/mongo');
   const socketAdapterDest = path.join(
     projectDir,
     'src/core/modules/socket/socket-state/socket-state-mongo.adapter.ts',
@@ -151,6 +168,8 @@ const copyMongoFiles = (projectDir: string) => {
   fsExtra.copySync(decDir, sqlDecDest, { overwrite: true });
   fsExtra.copySync(modDir, sqlModDest, { overwrite: true });
   fsExtra.copySync(seedsDir, seedsDest, { overwrite: true });
+  fsExtra.copySync(testsDir, testsDest, { overwrite: true });
+  fsExtra.copySync(interceptorsDir, interceptorsDest, { overwrite: true });
   fsExtra.copySync(appGatewayTemplate, appGateway, { overwrite: true });
   fsExtra.copySync(socketAdapterDir, socketAdapterDest, { overwrite: true });
 };

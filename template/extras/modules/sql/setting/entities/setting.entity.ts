@@ -1,16 +1,19 @@
 import { SqlModel } from '@core/sql/sql.model';
+import { IsUnique } from '@core/sql/sql.unique-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsInt, IsString } from 'class-validator';
-import { Column, DataType, Table } from 'sequelize-typescript';
+import { Column, DataType, Index, Table } from 'sequelize-typescript';
 
 @Table
 export class Setting extends SqlModel {
-  @Column({ unique: 'name' })
+  @Column
+  @Index('name')
   @ApiProperty({
     description: 'Setting Name',
     example: 'timezone',
   })
   @IsString()
+  @IsUnique('Setting')
   name: string;
 
   @Column

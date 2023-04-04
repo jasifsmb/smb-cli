@@ -1,5 +1,6 @@
 import { MongoDocument } from '@core/mongo';
 import { defaultSchemaOptions, MongoSchema } from '@core/mongo/mongo.schema';
+import { IsUnique } from '@core/mongo/mongo.unique-validator';
 import { createMongoSchema } from '@core/mongo/mongo.utils';
 import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
@@ -12,12 +13,13 @@ export type PageDocument = MongoDocument<Page>;
   ...defaultSchemaOptions,
 })
 export class Page extends MongoSchema {
-  @Prop({ unique: true })
+  @Prop({ index: true })
   @ApiProperty({
     description: 'Page Name',
     example: 'about_us',
   })
   @IsString()
+  @IsUnique('Page')
   name: string;
 
   @Prop()

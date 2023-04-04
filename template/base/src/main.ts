@@ -10,18 +10,22 @@ import { MicroserviceOptions } from '@nestjs/microservices';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 
+import { ValidationPipe } from '@nestjs/common';
+import { useContainer } from 'class-validator';
 import { isPrimaryInstance } from 'src/core/core.utils';
 import { initAdapters } from './app.gateway';
 import { AppModule } from './app.module';
+import { Environment } from './config';
 import { SwaggerConfig, SwaggerOptions } from './config/swagger';
+import { TrimPipe } from './core/pipes/trim.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix('v1');
   /* Loading config */
   const config = app.get(ConfigService);
-  const env = config.get('env');
-  if (env !== 'production') {
+  const env = config.get<Environment>('env');
+  if (env !== Environment.Production) {
     /* Morgan logger in non-production env */
     app.use(morgan('tiny'));
     /* Swagger documentation */
@@ -32,6 +36,17 @@ async function bootstrap() {
   /* Body parsers */
   app.use(json({ limit: '5mb' }));
   app.use(urlencoded({ extended: true, limit: '5mb' }));
+  /* Validation */
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  app.useGlobalPipes(
+    new TrimPipe(),
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+      validationError: { target: false },
+    }),
+  );
   /* Trust proxy config */
   app.set('trust proxy', 1);
   /* Helmet */

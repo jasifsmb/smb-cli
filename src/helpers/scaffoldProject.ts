@@ -105,7 +105,7 @@ export const scaffoldProject = async ({
   );
   fs.renameSync(
     path.join(projectDir, '_env.example'),
-    path.join(projectDir, '.env.example'),
+    path.join(projectDir, '.env'),
   );
   fs.renameSync(
     path.join(projectDir, '_eslintrc.js'),

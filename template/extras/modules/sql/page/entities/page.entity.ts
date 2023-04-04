@@ -1,17 +1,20 @@
 import { SqlModel } from '@core/sql/sql.model';
+import { IsUnique } from '@core/sql/sql.unique-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
 import { DataTypes } from 'sequelize';
-import { Column, Table } from 'sequelize-typescript';
+import { Column, Index, Table } from 'sequelize-typescript';
 
 @Table
 export class Page extends SqlModel {
-  @Column({ unique: 'name' })
+  @Column
+  @Index('name')
   @ApiProperty({
     description: 'Page Name',
     example: 'about_us',
   })
   @IsString()
+  @IsUnique('Page')
   name: string;
 
   @Column

@@ -90,6 +90,12 @@ export const getMongoEngineChangeParams = () => ({
         class: 'RolesGuard',
         classPath: './mongo/auth/roles.guard',
       },
+      {
+        provide: 'APP_INTERCEPTOR',
+        providerPath: '@nestjs/core',
+        class: 'SettingsInterceptor',
+        classPath: 'src/core/interceptors/mongo/settings.interceptors',
+      },
     ],
     socketAdapter: [
       {
@@ -129,6 +135,12 @@ export const getSQLEngineChangeParams = () => ({
         provide: 'APP_GUARD',
         class: 'RolesGuard',
         classPath: './sql/auth/roles.guard',
+      },
+      {
+        provide: 'APP_INTERCEPTOR',
+        providerPath: '@nestjs/core',
+        class: 'SettingsInterceptor',
+        classPath: 'src/core/interceptors/sql/settings.interceptors',
       },
     ],
     socketAdapter: [
